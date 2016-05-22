@@ -149,7 +149,13 @@ AggregateRoot.prototype.updatedAt = function () {
  * @returns {Number}
  */
 AggregateRoot.prototype.modifiedAt = function () {
-  return Math.max(Math.max(this.$aggregateMeta.createdAt, this.$aggregateMeta.updatedAt), this.$aggregateMeta.deletedAt)
+  if (this.$aggregateMeta.deletedAt) {
+    return this.$aggregateMeta.deletedAt
+  }
+  if (this.$aggregateMeta.updatedAt) {
+    return this.$aggregateMeta.updatedAt
+  }
+  return this.$aggregateMeta.createdAt
 }
 
 /**
