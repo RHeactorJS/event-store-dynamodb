@@ -126,4 +126,8 @@ AggregateRepository.findByRelatedId = function (repo, relatedName, relatedId) {
     })
 }
 
+AggregateRepository.addRelatedId = function (repo, relatedName, relatedId, aggregateId) {
+  return repo.redis.saddAsync(repo.aggregateAlias + ':' + relatedName + ':' + relatedId, aggregateId)
+}
+
 module.exports = AggregateRepository
