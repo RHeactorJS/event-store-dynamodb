@@ -1,7 +1,7 @@
 'use strict'
 
 const util = require('util')
-const _map = require('lodash/map')
+const Promise = require('bluebird')
 
 /**
  * Creates a new EventStore for the given aggregate, e.g. 'user'.
@@ -11,11 +11,13 @@ const _map = require('lodash/map')
  *
  * @param {String} aggregate
  * @param {redis.client} redis
+ * @param {Number} redis
  * @constructor
  */
-function EventStore (aggregate, redis) {
+function EventStore (aggregate, redis, numEvents) {
   this.aggregate = aggregate
   this.redis = redis
+  this.numEvents = numEvents || 100
 }
 
 /**
@@ -44,24 +46,29 @@ EventStore.prototype.fetch = function (aggregateId) {
   let self = this
   let aggregateEvents = self.aggregate + '.events.' + aggregateId
   let start = 0
-  let numEvents = 100
+  let fetchedEvents = []
   let fetchEvents = function (start) {
-    return self.redis.lrangeAsync(aggregateEvents, start, numEvents)
-  }
-  let events = []
-  return fetchEvents(start)
-    .then((res) => {
-      let index = start
-      _map(res, (event) => {
-        let data = JSON.parse(event)
-        events.push(new PersistedEvent(data.eventType, data.eventPayload, data.eventCreatedAt, ++index))
+    return Promise
+      .resolve(self.redis.lrangeAsync(aggregateEvents, start, start + self.numEvents - 1))
+      .then((res) => {
+        return Promise
+          .map(res, (e) => {
+            fetchedEvents.push(e)
+          })
+          .then(() => {
+            if (res.length === self.numEvents) {
+              return fetchEvents(start + self.numEvents)
+            } else {
+              return fetchedEvents
+            }
+          })
       })
-      if (res.length === numEvents) {
-        start = start + numEvents
-        return fetchEvents(start)
-      } else {
-        return events
-      }
+  }
+  let index = 0
+  return fetchEvents(start)
+    .map((event) => {
+      let data = JSON.parse(event)
+      return new PersistedEvent(data.eventType, data.eventPayload, data.eventCreatedAt, ++index)
     })
 }
 

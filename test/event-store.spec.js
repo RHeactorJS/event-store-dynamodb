@@ -13,7 +13,7 @@ describe('EventStore', function () {
   let eventStore
 
   before(function () {
-    eventStore = new EventStore.EventStore('user', helper.redis)
+    eventStore = new EventStore.EventStore('user', helper.redis, 1)
   })
 
   it('should store an event', (done) => {
