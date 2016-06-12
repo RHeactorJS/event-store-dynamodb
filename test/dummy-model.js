@@ -13,27 +13,28 @@ util.inherits(DummyModel, Aggregator.AggregateRoot)
 
 DummyModel.$aggregateName = 'dummy'
 
-DummyModel.aggregate = function (id, events) {
+/**
+ * @param {Array.<ModelEvent>} events
+ * @returns {Promise}
+ */
+DummyModel.aggregate = function (events) {
   return Promise
     .try(() => {
       let dummy
       _map(events, (event) => {
-        let data = event.eventPayload
-        switch (event.eventType) {
+        let data = event.data
+        switch (event.name) {
           case 'DummyCreatedEvent':
             dummy = new DummyModel(data.email)
-            dummy.persisted(id)
+            dummy.persisted(event.aggregateId, event.createdAt)
             break
           default:
-            // TODO: Log
-            console.error('Unhandled DummyModel event', event)
             throw new Errors.UnhandledDomainEvent(event)
         }
       })
       return dummy
     })
     .catch((err) => {
-      // TODO: Log
       console.error(err)
       return null
     })

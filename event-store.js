@@ -1,7 +1,7 @@
 'use strict'
 
-const util = require('util')
 const Promise = require('bluebird')
+const ModelEvent = require('./model-event')
 
 /**
  * Creates a new EventStore for the given aggregate, e.g. 'user'.
@@ -11,7 +11,7 @@ const Promise = require('bluebird')
  *
  * @param {String} aggregate
  * @param {redis.client} redis
- * @param {Number} redis
+ * @param {Number} numEvents
  * @constructor
  */
 function EventStore (aggregate, redis, numEvents) {
@@ -21,26 +21,25 @@ function EventStore (aggregate, redis, numEvents) {
 }
 
 /**
- * Persists an event for the aggregate identified by aggregateId.
+ * Persists an event
  *
  * The redis list type guarantees the order of insertion. So we don't need to jump through hoops to manage a version
  * id per aggregate. This can simply be done in the fetch method.
  *
- * @param {String} aggregateId
- * @param {Event} event
- * @return {bluebird.Promise} of {PersistedEvent}
+ * @param {ModelEvent} event
+ * @return {Promise}
  */
-EventStore.prototype.persist = function (aggregateId, event) {
+EventStore.prototype.persist = function (event) {
   let self = this
-  let aggregateEvents = self.aggregate + '.events.' + aggregateId
-  return self.redis.rpushAsync(aggregateEvents, JSON.stringify(event))
+  let aggregateEvents = self.aggregate + '.events.' + event.aggregateId
+  return Promise.resolve(self.redis.rpushAsync(aggregateEvents, JSON.stringify(event)))
 }
 
 /**
  * Returns the events for the aggregate identified by aggregateId.
  *
  * @param {String} aggregateId
- * @return {bluebird.Promise} of {Array<PersistedEvent>}
+ * @return {Promise.<Array.<ModelEvent>>}
  */
 EventStore.prototype.fetch = function (aggregateId) {
   let self = this
@@ -64,47 +63,11 @@ EventStore.prototype.fetch = function (aggregateId) {
           })
       })
   }
-  let index = 0
   return fetchEvents(start)
-    .map((event) => {
-      let data = JSON.parse(event)
-      return new PersistedEvent(data.eventType, data.eventPayload, data.eventCreatedAt, ++index)
+    .map((e) => {
+      let event = JSON.parse(e)
+      return new ModelEvent(event.aggregateId, event.name, event.data, event.createdAt)
     })
 }
 
-/**
- * An event that can be persisted by the {EventStore} of the given type.
- * data contains the event payload and will be json encoded
- *
- * @param {String} eventType
- * @param {Object} eventPayload
- * @param {Number} eventCreatedAt
- * @constructor
- */
-function Event (eventType, eventPayload, eventCreatedAt) {
-  Object.defineProperty(this, 'eventType', {value: eventType, enumerable: true})
-  Object.defineProperty(this, 'eventPayload', {value: eventPayload, enumerable: true})
-  Object.defineProperty(this, 'eventCreatedAt', {value: eventCreatedAt || Date.now(), enumerable: true})
-}
-
-/**
- * An event that has been persisted by the {EventStore}. In addition to all fields of {Event} it
- * the internal index for this aggregate's events
- *
- * @param {String} eventType
- * @param {Object} eventPayload
- * @param {Number} eventCreatedAt
- * @param {Number} eventIndex
- * @constructor
- */
-function PersistedEvent (eventType, eventPayload, eventCreatedAt, eventIndex) {
-  Event.call(this, eventType, eventPayload, eventCreatedAt)
-  Object.defineProperty(this, 'eventIndex', {value: eventIndex, enumerable: true})
-}
-util.inherits(PersistedEvent, Event)
-
-module.exports = {
-  Event,
-  EventStore,
-  PersistedEvent
-}
+module.exports = EventStore

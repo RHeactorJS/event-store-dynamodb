@@ -7,13 +7,14 @@ const Promise = require('bluebird')
 const helper = require('./helper')
 const expect = require('chai').expect
 const DummyModel = require('./dummy-model')
+const ModelEvent = require('../model-event')
 
 describe('AggregateRepository', function () {
   before(helper.clearDb)
 
   let repository
 
-  before(function () {
+  before(() => {
     repository = new AggregateRepository(
       DummyModel,
       'dummy',
@@ -23,8 +24,10 @@ describe('AggregateRepository', function () {
 
   it('should create', (done) => {
     Promise.join(repository.create({email: 'john.doe@example.invalid'}), repository.create({email: 'jane.doe@example.invalid'}))
-      .spread(function (id1, id2) {
-        return Promise.join(repository.findById(id1), repository.findById(id2))
+      .spread((event1, event2) => {
+        expect(event1).to.be.instanceOf(ModelEvent)
+        expect(event2).to.be.instanceOf(ModelEvent)
+        return Promise.join(repository.findById(event1.aggregateId), repository.findById(event2.aggregateId))
       })
       .spread((u1, u2) => {
         expect(u1.email).to.equal('john.doe@example.invalid')

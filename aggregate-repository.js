@@ -1,6 +1,7 @@
 'use strict'
 
 const EventStore = require('./event-store')
+const ModelEvent = require('./model-event')
 const _capitalize = require('lodash/capitalize')
 const Errors = require('rheactor-value-objects/errors')
 const Promise = require('bluebird')
@@ -16,7 +17,7 @@ const Promise = require('bluebird')
 var AggregateRepository = function (aggregateRoot, aggregateAlias, redis) {
   this.aggregateRoot = aggregateRoot
   this.aggregateAlias = aggregateAlias
-  this.eventStore = new EventStore.EventStore(aggregateAlias, redis)
+  this.eventStore = new EventStore(aggregateAlias, redis)
   this.redis = redis
 }
 
@@ -24,20 +25,18 @@ var AggregateRepository = function (aggregateRoot, aggregateAlias, redis) {
  * Generic method for storing new aggregates
  *
  * @param {AggregateRoot} aggregate
- * @returns {Promise.<String>} of the id
+ * @returns {Promise.<ModelEvent>}
  */
 AggregateRepository.prototype.create = function (aggregate) {
   let self = this
   return self.redis.incrAsync(self.aggregateAlias + ':id')
     .then((id) => {
+      let event = new ModelEvent(id, _capitalize(self.aggregateAlias) + 'CreatedEvent', aggregate)
       return this.eventStore
-        .persist(id, new EventStore.Event(_capitalize(self.aggregateAlias) + 'CreatedEvent', aggregate))
+        .persist(event)
         .then(() => {
-          return id
+          return event
         })
-    })
-    .then((id) => {
-      return id
     })
 }
 
@@ -50,7 +49,7 @@ AggregateRepository.prototype.create = function (aggregate) {
 AggregateRepository.prototype.findById = function (id) {
   let self = this
   return self.eventStore.fetch(id)
-    .then(self.aggregateRoot.aggregate.bind(self.aggregateRoot, id))
+    .then(self.aggregateRoot.aggregate.bind(self.aggregateRoot))
     .then((aggregate) => {
       if (!aggregate) return
       return aggregate.isDeleted() ? undefined : aggregate
@@ -90,7 +89,7 @@ AggregateRepository.prototype.findAll = function () {
 AggregateRepository.prototype.getById = function (id) {
   let self = this
   return self.eventStore.fetch(id)
-    .then(self.aggregateRoot.aggregate.bind(self.aggregateRoot, id))
+    .then(self.aggregateRoot.aggregate.bind(self.aggregateRoot))
     .then((aggregate) => {
       if (!aggregate) {
         throw new Errors.EntityNotFoundError(self.aggregateAlias + ' with id "' + id + '" not found.')
