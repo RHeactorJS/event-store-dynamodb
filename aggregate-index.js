@@ -21,7 +21,6 @@ var AggregateIndex = function (aggregate, redis) {
  * @param {String} value
  * @param {String} aggregateId
  * @returns {Promise}
- * TODO: error handling
  */
 AggregateIndex.prototype.add = function (type, value, aggregateId) {
   var self = this
@@ -90,6 +89,18 @@ AggregateIndex.prototype.addToListIfNotPresent = function (type, aggregateId) {
 }
 
 /**
+ * Returns the entries of the list
+ *
+ * @param {String} type
+ * @returns {Promise.<Array>}
+ */
+AggregateIndex.prototype.getList = function (type) {
+  var self = this
+  let index = self.aggregate + '.' + type + '.list'
+  return self.redis.smembersAsync(index)
+}
+
+/**
  * Remove the value from the list of the given type for the aggregate identified by the given aggregateId
  *
  * @param {String} type
@@ -113,11 +124,8 @@ AggregateIndex.prototype.removeFromList = function (type, aggregateId) {
 AggregateIndex.prototype.find = function (type, value) {
   var self = this
   return self.get(type, value)
-    .catch((err) => {
-      if (err instanceof Errors.EntityNotFoundError) {
-        return null
-      }
-      throw err
+    .catch(Errors.EntityNotFoundError, () => {
+      return null
     })
 }
 

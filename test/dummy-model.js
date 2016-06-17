@@ -1,52 +1,34 @@
 'use strict'
 
 const util = require('util')
-const Aggregator = require('../aggregator')
-const Promise = require('bluebird')
-const _map = require('lodash/map')
+const AggregateRoot = require('../aggregate-root')
 const Errors = require('rheactor-value-objects/errors')
 
 function DummyModel (email) {
+  AggregateRoot.call(this)
   this.email = email
 }
-util.inherits(DummyModel, Aggregator.AggregateRoot)
+util.inherits(DummyModel, AggregateRoot)
 
 DummyModel.$aggregateName = 'dummy'
 
 /**
- * @param {Array.<ModelEvent>} events
- * @returns {Promise}
+ * @param {ModelEvent} event
  */
-DummyModel.aggregate = function (events) {
-  return Promise
-    .try(() => {
-      let dummy
-      _map(events, (event) => {
-        let data = event.data
-        switch (event.name) {
-          case 'DummyCreatedEvent':
-            dummy = new DummyModel(data.email)
-            dummy.persisted(event.aggregateId, event.createdAt)
-            break
-          default:
-            throw new Errors.UnhandledDomainEvent(event)
-        }
-      })
-      return dummy
-    })
-    .catch((err) => {
-      console.error(err)
-      return null
-    })
+DummyModel.prototype.applyEvent = function (event) {
+  let self = this
+  let data = event.data
+  switch (event.name) {
+    case 'DummyCreatedEvent':
+      this.email = event.data.email
+      this.persisted(event.aggregateId, event.createdAt)
+      break
+    case 'DummyDeletedEvent':
+      this.deleted(event.createdAt)
+      break
+    default:
+      throw new Errors.UnhandledDomainEvent(event.name)
+  }
 }
-
-/**
- * @param {AggregateRoot} aggregateRoot
- * @constructor
- */
-function SampleAggregator (aggregateRoot) {
-  Aggregator.Aggregator.call(this, aggregateRoot)
-}
-util.inherits(SampleAggregator, Aggregator.Aggregator)
 
 module.exports = DummyModel

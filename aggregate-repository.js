@@ -3,8 +3,10 @@
 const EventStore = require('./event-store')
 const ModelEvent = require('./model-event')
 const _capitalize = require('lodash/capitalize')
+const _map = require('lodash/map')
 const Errors = require('rheactor-value-objects/errors')
 const Promise = require('bluebird')
+const AggregateRoot = require('./aggregate-root')
 
 /**
  * Creates a new aggregate repository
@@ -22,21 +24,45 @@ var AggregateRepository = function (aggregateRoot, aggregateAlias, redis) {
 }
 
 /**
- * Generic method for storing new aggregates
+ * Generic method for add aggregates to the collection.
+ * The repository will assign an ID to them
+ *
+ * Modifies the aggregate.
  *
  * @param {AggregateRoot} aggregate
  * @returns {Promise.<ModelEvent>}
  */
-AggregateRepository.prototype.create = function (aggregate) {
+AggregateRepository.prototype.add = function (aggregate) {
   let self = this
-  return self.redis.incrAsync(self.aggregateAlias + ':id')
+  return Promise
+    .resolve(self.redis.incrAsync(self.aggregateAlias + ':id'))
     .then((id) => {
       let event = new ModelEvent(id, _capitalize(self.aggregateAlias) + 'CreatedEvent', aggregate)
       return this.eventStore
         .persist(event)
         .then(() => {
+          aggregate.applyEvent(event)
           return event
         })
+    })
+}
+
+/**
+ * Generic method for removing aggregates from the collection
+ *
+ * Modifies the aggregate.
+ *
+ * @param {AggregateRoot} aggregate
+ * @returns {Promise.<ModelEvent>}
+ */
+AggregateRepository.prototype.remove = function (aggregate) {
+  let self = this
+  let event = new ModelEvent(aggregate.aggregateId(), _capitalize(self.aggregateAlias) + 'DeletedEvent', aggregate)
+  return this.eventStore
+    .persist(event)
+    .then(() => {
+      aggregate.applyEvent(event)
+      return event
     })
 }
 
@@ -49,7 +75,7 @@ AggregateRepository.prototype.create = function (aggregate) {
 AggregateRepository.prototype.findById = function (id) {
   let self = this
   return self.eventStore.fetch(id)
-    .then(self.aggregateRoot.aggregate.bind(self.aggregateRoot))
+    .then(self.aggregate.bind(self))
     .then((aggregate) => {
       if (!aggregate) return
       return aggregate.isDeleted() ? undefined : aggregate
@@ -57,16 +83,42 @@ AggregateRepository.prototype.findById = function (id) {
 }
 
 /**
- * Returns all items
+ * Creates an instance of this repositories aggregate root by appying all events
  *
- * NOTE: naively returns all entities by fetching them by ID.
- * FIXME: Replace by using other iterable lists
+ * NOTE: Because the signature of the AggregateRoot's constructor may change
+ * over time, we bypass the individual constructor of the Model. The model
+ * is passed the the complete list of events (including the created event)
+ * and must construct itself from that list.
+ * This way we can keep hard checks when constructing new model instance from
+ * code "new MyExampleModel(arg)" but can handle changing payload of the created
+ * event over time.
+ *
+ * @param {Array.<ModelEvent>} events
+ * @returns {AggregateRoot}
+ */
+AggregateRepository.prototype.aggregate = function (events) {
+  let self = this
+  if (!events.length) {
+    return
+  }
+  let model = Object.create(self.aggregateRoot.prototype) // Instantiate model
+  AggregateRoot.call(model) // Bypass the model constructor, but init necessary data
+  _map(events, model.applyEvent.bind(model))
+  return model
+}
+
+/**
+ * Returns all entites
+ *
+ * NOTE: naively returns all entities by fetching them one by one by ID starting
+ * from 1 to the current max id.
  *
  * @returns {Promise.<[AggregateRoot]>}
  */
 AggregateRepository.prototype.findAll = function () {
   let self = this
-  return self.redis.getAsync(self.aggregateAlias + ':id')
+  return Promise
+    .resolve(self.redis.getAsync(self.aggregateAlias + ':id'))
     .then((maxId) => {
       let promises = []
       for (let i = 1; i <= maxId; i++) {
@@ -89,7 +141,7 @@ AggregateRepository.prototype.findAll = function () {
 AggregateRepository.prototype.getById = function (id) {
   let self = this
   return self.eventStore.fetch(id)
-    .then(self.aggregateRoot.aggregate.bind(self.aggregateRoot))
+    .then(self.aggregate.bind(self))
     .then((aggregate) => {
       if (!aggregate) {
         throw new Errors.EntityNotFoundError(self.aggregateAlias + ' with id "' + id + '" not found.')
@@ -101,32 +153,40 @@ AggregateRepository.prototype.getById = function (id) {
     })
 }
 
-AggregateRepository.findByRelatedId = function (repo, relatedName, relatedId) {
-  return repo.redis.smembersAsync(repo.aggregateAlias + ':' + relatedName + ':' + relatedId)
-    .map((id) => {
-      return repo.getById(id)
-        .then((model) => {
-          return model
-        })
-        .catch((err) => {
-          if (!/EntityDeletedError/.test(err.name)) {
-            console.error('AggregateRepository error: the item ' + id + ' for  ' + repo.aggregateAlias + ' was not found!')
-          }
-        })
-    })
+/**
+ * Finds all entities that are associated with the given relation of the given relationId
+ *
+ * The need to be added via addRelatedId()
+ *
+ * @param {String} relation
+ * @param {String} relatedId
+ * @returns {Promise.<Array.<AggregateRoot>>}
+ */
+AggregateRepository.prototype.findByRelatedId = function (relation, relatedId) {
+  let self = this
+  return Promise
+    .resolve(self.redis.smembersAsync(self.aggregateAlias + ':' + relation + ':' + relatedId))
+    .map(self.findById.bind(self))
     .filter((model) => {
       return model !== undefined
     })
-    .catch((err) => {
-      if (!/EntityNotFoundError/.test(err.name)) {
-        console.error('AggregateRepository', err)
-      }
-      return []
-    })
 }
 
-AggregateRepository.addRelatedId = function (repo, relatedName, relatedId, aggregateId) {
-  return repo.redis.saddAsync(repo.aggregateAlias + ':' + relatedName + ':' + relatedId, aggregateId)
+/**
+ * A helper function for associating the the aggregateId with the given relatedId of the relation
+ *
+ * e.g. Associate the user (aggregateId='17') with the meeting (relation='meeting') of id 42 (relatedId='42')
+ * Now all users of meeting 42 can be returned via findByRelatedId('meeting', '42')
+ *
+ * @param {String} relation
+ * @param {String} relatedId
+ * @param {String} aggregateId
+ * @returns {Promise}
+ */
+AggregateRepository.prototype.addRelatedId = function (relation, relatedId, aggregateId) {
+  let self = this
+  return Promise
+    .resolve(self.redis.saddAsync(self.aggregateAlias + ':' + relation + ':' + relatedId, aggregateId))
 }
 
 module.exports = AggregateRepository

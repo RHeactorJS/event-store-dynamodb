@@ -6,6 +6,7 @@ const AggregateIndex = require('../aggregate-index')
 const Promise = require('bluebird')
 const helper = require('./helper')
 const expect = require('chai').expect
+const Errors = require('rheactor-value-objects/errors')
 
 describe('AggregateIndex', function () {
   before(helper.clearDb)
@@ -33,6 +34,22 @@ describe('AggregateIndex', function () {
     })
   })
 
+  describe('.remove()', function () {
+    it('should remove a value from an index', (done) => {
+      aggregateIndex.add('some-type', 'some-value', 'some-aggregateId')
+        .then(() => {
+          return aggregateIndex.remove('some-type', 'some-value', 'some-aggregateId')
+        })
+        .then(() => {
+          return aggregateIndex.find('some-type', 'some-value')
+        })
+        .then((res) => {
+          expect(res).to.equal(null)
+          done()
+        })
+    })
+  })
+
   describe('.addIfNotPresent()', function () {
     it('should only add and index for a value if it is not present', (done) => {
       Promise
@@ -40,9 +57,65 @@ describe('AggregateIndex', function () {
           aggregateIndex.addIfNotPresent('email', 'jill.doe@example.invalid', '17'),
           aggregateIndex.addIfNotPresent('email', 'jill.doe@example.invalid', '18')
         )
-        .catch((err) => {
-          expect(err.name).to.be.equal('EntryAlreadyExistsError')
+        .catch(Errors.EntryAlreadyExistsError, (err) => {
           expect(err.message).to.be.contain('jill.doe@example.invalid')
+          done()
+        })
+    })
+  })
+
+  describe('.addToListIfNotPresent()', function () {
+    it('should add a value to the list if it is not present', (done) => {
+      aggregateIndex.addToListIfNotPresent('meeting-users:42', '17')
+        .then(() => {
+          done()
+        })
+    })
+    it('should not add the value to the list if it is present', (done) => {
+      aggregateIndex.addToListIfNotPresent('meeting-users:42', '17')
+        .catch(Errors.EntryAlreadyExistsError, (err) => {
+          expect(err.message).to.equal('Aggregate "17" already member of "user.meeting-users:42.list".')
+          done()
+        })
+
+    })
+  })
+
+  describe('.getList()', function () {
+    it('should add a value to the list if it is not present', (done) => {
+      Promise
+        .join(
+          aggregateIndex.addToListIfNotPresent('meeting-users:256', '19'),
+          aggregateIndex.addToListIfNotPresent('meeting-users:256', '20')
+        )
+        .then(() => {
+          return aggregateIndex.getList('meeting-users:256')
+        })
+        .spread((id1, id2) => {
+          expect(id1).to.equal('19')
+          expect(id2).to.equal('20')
+          done()
+        })
+    })
+  })
+
+  describe('.removeFromList()', function () {
+    it('should add a value to the list if it is not present', (done) => {
+      aggregateIndex.addToListIfNotPresent('meeting-users:127', '18')
+        .then(() => {
+          return aggregateIndex.getList('meeting-users:127')
+        })
+        .spread((id) => {
+          expect(id).to.equal('18')
+        })
+        .then(() => {
+          return aggregateIndex.removeFromList('meeting-users:127', '18')
+        })
+        .then(() => {
+          return aggregateIndex.getList('meeting-users:127')
+        })
+        .then((members) => {
+          expect(members).to.deep.equal([])
           done()
         })
     })

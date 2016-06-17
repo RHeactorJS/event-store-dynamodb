@@ -32,7 +32,12 @@ function EventStore (aggregate, redis, numEvents) {
 EventStore.prototype.persist = function (event) {
   let self = this
   let aggregateEvents = self.aggregate + '.events.' + event.aggregateId
-  return Promise.resolve(self.redis.rpushAsync(aggregateEvents, JSON.stringify(event)))
+  let data = {
+    eventType: event.name,
+    eventPayload: event.data,
+    eventCreatedAt: event.createdAt
+  }
+  return Promise.resolve(self.redis.rpushAsync(aggregateEvents, JSON.stringify(data)))
 }
 
 /**
@@ -66,7 +71,7 @@ EventStore.prototype.fetch = function (aggregateId) {
   return fetchEvents(start)
     .map((e) => {
       let event = JSON.parse(e)
-      return new ModelEvent(event.aggregateId, event.name, event.data, event.createdAt)
+      return new ModelEvent(aggregateId, event.eventType, event.eventPayload, event.eventCreatedAt)
     })
 }
 

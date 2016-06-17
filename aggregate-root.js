@@ -1,34 +1,22 @@
 'use strict'
 
-const _forEach = require('lodash/forEach')
 const Joi = require('joi')
 const ValidationFailedException = require('rheactor-value-objects/errors').ValidationFailedException
-
-/**
- * Aggregator build aggregates from events read from the eventStore
- *
- * @param {AggregateRoot} aggregateRoot
- * @constructor
- */
-function Aggregator (aggregateRoot) {
-  this.aggregateRoot = aggregateRoot
-}
-
-/**
- * Simple merge function
- * @param {AggregateRoot} aggregateRoot
- * @param {PersistedEvent} event
- */
-Aggregator.merge = (aggregateRoot, event) => {
-  _forEach(event.eventPayload, function (value, key) {
-    aggregateRoot[key] = event.eventPayload[key] || undefined
-  })
-}
 
 /**
  * Base class for aggregates
  */
 function AggregateRoot () {
+  Object.defineProperty(this, '$aggregateMeta', {
+    value: {
+      id: null,
+      version: null,
+      deleted: false,
+      createdAt: null,
+      updatedAt: null,
+      deletedAt: null
+    }
+  })
 }
 
 /**
@@ -46,14 +34,9 @@ AggregateRoot.prototype.persisted = function (aggregateId, createdAt) {
     if (err) {
       throw new ValidationFailedException('AggregateRoot validation failed', data, err)
     }
-    self.$aggregateMeta = {
-      id: '' + data.aggregateId,
-      version: 1,
-      deleted: false,
-      createdAt: data.createdAt,
-      updatedAt: null,
-      deletedAt: null
-    }
+    self.$aggregateMeta.id = '' + data.aggregateId
+    self.$aggregateMeta.version = 1
+    self.$aggregateMeta.createdAt = data.createdAt
   })
 }
 
@@ -104,15 +87,6 @@ AggregateRoot.prototype.aggregateVersion = function () {
  */
 AggregateRoot.prototype.aggregateId = function () {
   return this.$aggregateMeta.id
-}
-
-/**
- * Returns the aggregate meta data
- *
- * @returns {String} meta data of the aggregation
- */
-AggregateRoot.prototype.aggregateMeta = function () {
-  return this.$aggregateMeta
 }
 
 /**
@@ -167,18 +141,4 @@ AggregateRoot.prototype.deletedAt = function () {
   return this.$aggregateMeta.deletedAt
 }
 
-/**
- * Applies the event
- *
- * @param {String} eventName
- * @param {object} payload
- * @param {Number} eventCreatedAt
- */
-AggregateRoot.prototype.apply = function (eventName, payload, eventCreatedAt) {
-  throw new Error(this.constructor.name + '.apply(eventName, payload, eventCreatedAt) not implemented!')
-}
-
-module.exports = {
-  Aggregator,
-  AggregateRoot
-}
+module.exports = AggregateRoot
