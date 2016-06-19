@@ -134,27 +134,4 @@ describe('AggregateRepository', function () {
         })
     })
   })
-
-  describe('Relations', () => {
-    it('should add items', (done) => {
-      const josh = new DummyModel('josh.doe@example.invalid')
-      const jasper = new DummyModel('jasper.doe@example.invalid')
-      Promise.join(repository.add(josh), repository.add(jasper))
-        .spread((event1, event2) => {
-          return Promise
-            .join(
-              repository.addRelatedId('meeting', '42', event1.aggregateId),
-              repository.addRelatedId('meeting', '42', event2.aggregateId)
-            )
-            .then(() => {
-              return repository.findByRelatedId('meeting', '42')
-            })
-            .spread((u1, u2) => {
-              expect(u1.email).to.equal('josh.doe@example.invalid')
-              expect(u2.email).to.equal('jasper.doe@example.invalid')
-              done()
-            })
-        })
-    })
-  })
 })
