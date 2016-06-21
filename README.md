@@ -9,4 +9,6 @@
 
 [![NPM](https://nodei.co/npm/rheactor-event-store.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/rheactor-event-store/)
 
-Implementation of an event store based on redis
+Implementation of an event store based on redis.
+
+Contains helper methods to manage secondary indices.
