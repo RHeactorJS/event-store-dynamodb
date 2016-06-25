@@ -2,7 +2,7 @@
 
 const EventStore = require('./event-store')
 const ModelEvent = require('./model-event')
-const _capitalize = require('lodash/capitalize')
+const _upperFirst = require('lodash/upperFirst')
 const _map = require('lodash/map')
 const Errors = require('rheactor-value-objects/errors')
 const Promise = require('bluebird')
@@ -37,7 +37,7 @@ AggregateRepository.prototype.add = function (aggregate) {
   return Promise
     .resolve(self.redis.incrAsync(self.aggregateAlias + ':id'))
     .then((id) => {
-      let event = new ModelEvent(id, _capitalize(self.aggregateAlias) + 'CreatedEvent', aggregate)
+      let event = new ModelEvent(id, _upperFirst(self.aggregateAlias) + 'CreatedEvent', aggregate)
       return this.eventStore
         .persist(event)
         .then(() => {
@@ -57,7 +57,7 @@ AggregateRepository.prototype.add = function (aggregate) {
  */
 AggregateRepository.prototype.remove = function (aggregate) {
   let self = this
-  let event = new ModelEvent(aggregate.aggregateId(), _capitalize(self.aggregateAlias) + 'DeletedEvent', aggregate)
+  let event = new ModelEvent(aggregate.aggregateId(), _upperFirst(self.aggregateAlias) + 'DeletedEvent', aggregate)
   return this.eventStore
     .persist(event)
     .then(() => {
