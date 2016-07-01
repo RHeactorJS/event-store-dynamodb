@@ -34,16 +34,29 @@ const AggregateRepository = function (aggregateRoot, aggregateAlias, redis) {
  */
 AggregateRepository.prototype.add = function (aggregate) {
   let self = this
-  return Promise
-    .resolve(self.redis.incrAsync(self.aggregateAlias + ':id'))
+  return self.redis.incrAsync(self.aggregateAlias + ':id')
     .then((id) => {
       let event = new ModelEvent(id, _upperFirst(self.aggregateAlias) + 'CreatedEvent', aggregate)
-      return this.eventStore
-        .persist(event)
+      return self.persistEvent(event)
         .then(() => {
           aggregate.applyEvent(event)
           return event
         })
+    })
+}
+
+/**
+ * Generic method to persist model events
+ *
+ * @param {ModelEvent} modelEvent
+ * @return {Promise.<ModelEvent>}
+ */
+AggregateRepository.prototype.persistEvent = function (modelEvent) {
+  let self = this
+  return self.eventStore
+    .persist(modelEvent)
+    .then(() => {
+      return modelEvent
     })
 }
 
@@ -58,8 +71,7 @@ AggregateRepository.prototype.add = function (aggregate) {
 AggregateRepository.prototype.remove = function (aggregate) {
   let self = this
   let event = new ModelEvent(aggregate.aggregateId(), _upperFirst(self.aggregateAlias) + 'DeletedEvent', aggregate)
-  return this.eventStore
-    .persist(event)
+  return self.persistEvent(event)
     .then(() => {
       aggregate.applyEvent(event)
       return event
@@ -117,8 +129,7 @@ AggregateRepository.prototype.aggregate = function (events) {
  */
 AggregateRepository.prototype.findAll = function () {
   let self = this
-  return Promise
-    .resolve(self.redis.getAsync(self.aggregateAlias + ':id'))
+  return self.redis.getAsync(self.aggregateAlias + ':id')
     .then((maxId) => {
       let promises = []
       for (let i = 1; i <= maxId; i++) {
