@@ -116,6 +116,7 @@ describe('AggregateRepository', function () {
                 .try(repository.getById.bind(repository, persistedJack.aggregateId()))
                 .catch(Errors.EntityDeletedError, (err) => {
                   expect(err.message).to.be.contain('dummy with id "' + persistedJack.aggregateId() + '" is deleted.')
+                  expect(err.entity).to.deep.equal(persistedJack)
                   done()
                 })
             })

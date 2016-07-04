@@ -158,7 +158,7 @@ AggregateRepository.prototype.getById = function (id) {
         throw new Errors.EntityNotFoundError(self.aggregateAlias + ' with id "' + id + '" not found.')
       }
       if (aggregate.isDeleted()) {
-        throw new Errors.EntityDeletedError(self.aggregateAlias + ' with id "' + id + '" is deleted.')
+        throw new Errors.EntityDeletedError(self.aggregateAlias + ' with id "' + id + '" is deleted.', aggregate)
       }
       return aggregate
     })
