@@ -1,12 +1,13 @@
 'use strict'
 
-const Promise = require('bluebird')
+const t = require('tcomb')
+const scalarType = t.union([t.String, t.Number])
 
 /**
  * Manages relations for aggregates
  *
  * @param {AggregateRepository} repository
- * @param {redis.client} redis
+ * @param {redis.client} promisified redis client
  * @constructor
  */
 const AggregateRelation = function (repository, redis) {
@@ -24,9 +25,10 @@ const AggregateRelation = function (repository, redis) {
  * @returns {Promise.<Array.<AggregateRoot>>}
  */
 AggregateRelation.prototype.findByRelatedId = function (relation, relatedId) {
+  t.String(relation)
+  scalarType(relatedId)
   let self = this
-  return Promise
-    .resolve(self.redis.smembersAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId))
+  return self.redis.smembersAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId)
     .map(self.repository.findById.bind(self.repository))
     .filter((model) => {
       return model !== undefined
@@ -45,9 +47,27 @@ AggregateRelation.prototype.findByRelatedId = function (relation, relatedId) {
  * @returns {Promise}
  */
 AggregateRelation.prototype.addRelatedId = function (relation, relatedId, aggregateId) {
+  t.String(relation)
+  scalarType(relatedId)
+  scalarType(aggregateId)
   let self = this
-  return Promise
-    .resolve(self.redis.saddAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId, aggregateId))
+  return self.redis.saddAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId, aggregateId)
+}
+
+/**
+ * A helper function for removing the the aggregateId with the given relatedId of the relation
+ *
+ * @param {String} relation
+ * @param {String} relatedId
+ * @param {String} aggregateId
+ * @returns {Promise}
+ */
+AggregateRelation.prototype.removeRelatedId = function (relation, relatedId, aggregateId) {
+  t.String(relation)
+  scalarType(relatedId)
+  scalarType(aggregateId)
+  let self = this
+  return self.redis.sremAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId, aggregateId)
 }
 
 module.exports = AggregateRelation
