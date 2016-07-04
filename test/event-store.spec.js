@@ -22,7 +22,7 @@ describe('EventStore', function () {
     Promise
       .join(
         eventStore.persist(new ModelEvent(17, 'SomeEvent', {foo: 'bar'}, d1)),
-        eventStore.persist(new ModelEvent(17, 'SomeOtherEvent', {foo: 'baz'}))
+        eventStore.persist(new ModelEvent(17, 'SomeOtherEvent', {foo: 'baz'}, null, 'John Doe'))
       )
       .then(() => {
         return eventStore.fetch(17)
@@ -34,11 +34,13 @@ describe('EventStore', function () {
         expect(res[0].data).to.deep.equal({foo: 'bar'})
         expect(res[0].createdAt).to.be.a('Number')
         expect(res[0].createdAt).to.equal(d1)
+        expect(res[0].createdBy).to.equal(undefined)
         expect(res[1]).to.be.instanceof(ModelEvent)
         expect(res[1].name).to.equal('SomeOtherEvent')
         expect(res[1].data).to.deep.equal({foo: 'baz'})
         expect(res[1].createdAt).to.be.a('Number')
         expect(res[1].createdAt).to.be.above(d1) // Use Date.now() as default createdAt
+        expect(res[1].createdBy).to.equal('John Doe')
         done()
       })
   })

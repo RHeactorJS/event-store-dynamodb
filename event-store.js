@@ -37,6 +37,9 @@ EventStore.prototype.persist = function (event) {
     eventPayload: event.data,
     eventCreatedAt: event.createdAt
   }
+  if (event.createdBy) {
+    data.eventCreatedBy = event.createdBy
+  }
   return Promise.resolve(self.redis.rpushAsync(aggregateEvents, JSON.stringify(data)))
 }
 
@@ -71,7 +74,7 @@ EventStore.prototype.fetch = function (aggregateId) {
   return fetchEvents(start)
     .map((e) => {
       let event = JSON.parse(e)
-      return new ModelEvent(aggregateId, event.eventType, event.eventPayload, event.eventCreatedAt)
+      return new ModelEvent(aggregateId, event.eventType, event.eventPayload, event.eventCreatedAt, event.eventCreatedBy)
     })
 }
 
