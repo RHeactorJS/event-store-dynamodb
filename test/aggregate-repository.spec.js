@@ -8,7 +8,8 @@ const helper = require('./helper')
 const expect = require('chai').expect
 const DummyModel = require('./dummy-model')
 const ModelEvent = require('../model-event')
-const Errors = require('rheactor-value-objects/errors')
+const EntityNotFoundError = require('rheactor-value-objects/errors/entity-not-found')
+const EntityDeletedError = require('rheactor-value-objects/errors/entity-deleted')
 
 describe('AggregateRepository', function () {
   before(helper.clearDb)
@@ -97,7 +98,7 @@ describe('AggregateRepository', function () {
   describe('.getById()', () => {
     it('should throw an EntityNotFoundError if entity not found', (done) => {
       Promise.try(repository.getById.bind(repository, 9999999))
-        .catch(Errors.EntityNotFoundError, (err) => {
+        .catch(err => EntityNotFoundError.is(err), (err) => {
           expect(err.message).to.be.contain('dummy with id "9999999" not found.')
           done()
         })
@@ -114,7 +115,7 @@ describe('AggregateRepository', function () {
             .then(() => {
               Promise
                 .try(repository.getById.bind(repository, persistedJack.aggregateId()))
-                .catch(Errors.EntityDeletedError, (err) => {
+                .catch(err => EntityDeletedError.is(err), (err) => {
                   expect(err.message).to.be.contain('dummy with id "' + persistedJack.aggregateId() + '" is deleted.')
                   expect(err.entity).to.deep.equal(persistedJack)
                   done()

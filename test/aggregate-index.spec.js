@@ -6,7 +6,7 @@ const AggregateIndex = require('../aggregate-index')
 const Promise = require('bluebird')
 const helper = require('./helper')
 const expect = require('chai').expect
-const Errors = require('rheactor-value-objects/errors')
+const EntryAlreadyExistsError = require('rheactor-value-objects/errors/entry-already-exists')
 
 describe('AggregateIndex', function () {
   before(helper.clearDb)
@@ -57,7 +57,7 @@ describe('AggregateIndex', function () {
           aggregateIndex.addIfNotPresent('email', 'jill.doe@example.invalid', '17'),
           aggregateIndex.addIfNotPresent('email', 'jill.doe@example.invalid', '18')
         )
-        .catch(Errors.EntryAlreadyExistsError, (err) => {
+        .catch(err => EntryAlreadyExistsError.is(err), (err) => {
           expect(err.message).to.be.contain('jill.doe@example.invalid')
           done()
         })
@@ -73,7 +73,7 @@ describe('AggregateIndex', function () {
     })
     it('should not add the value to the list if it is present', (done) => {
       aggregateIndex.addToListIfNotPresent('meeting-users:42', '17')
-        .catch(Errors.EntryAlreadyExistsError, (err) => {
+        .catch(err => EntryAlreadyExistsError.is(err), (err) => {
           expect(err.message).to.equal('Aggregate "17" already member of "user.meeting-users:42.list".')
           done()
         })

@@ -4,7 +4,8 @@ const EventStore = require('./event-store')
 const ModelEvent = require('./model-event')
 const _upperFirst = require('lodash/upperFirst')
 const _map = require('lodash/map')
-const Errors = require('rheactor-value-objects/errors')
+const EntityNotFoundError = require('rheactor-value-objects/errors/entity-not-found')
+const EntityDeletedError = require('rheactor-value-objects/errors/entity-deleted')
 const Promise = require('bluebird')
 const AggregateRoot = require('./aggregate-root')
 
@@ -155,10 +156,10 @@ AggregateRepository.prototype.getById = function (id) {
     .then(self.aggregate.bind(self))
     .then((aggregate) => {
       if (!aggregate) {
-        throw new Errors.EntityNotFoundError(self.aggregateAlias + ' with id "' + id + '" not found.')
+        throw new EntityNotFoundError(self.aggregateAlias + ' with id "' + id + '" not found.')
       }
       if (aggregate.isDeleted()) {
-        throw new Errors.EntityDeletedError(self.aggregateAlias + ' with id "' + id + '" is deleted.', aggregate)
+        throw new EntityDeletedError(self.aggregateAlias + ' with id "' + id + '" is deleted.', aggregate)
       }
       return aggregate
     })

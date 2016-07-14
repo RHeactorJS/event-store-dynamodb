@@ -2,7 +2,8 @@
 
 const util = require('util')
 const AggregateRoot = require('../aggregate-root')
-const Errors = require('rheactor-value-objects/errors')
+const UnhandledDomainEvent = require('rheactor-value-objects/errors/unhandled-domainevent')
+
 
 function DummyModel (email) {
   AggregateRoot.call(this)
@@ -26,7 +27,7 @@ DummyModel.prototype.applyEvent = function (event) {
       this.deleted(event.createdAt)
       break
     default:
-      throw new Errors.UnhandledDomainEvent(event.name)
+      throw new UnhandledDomainEvent(event.name)
   }
 }
 

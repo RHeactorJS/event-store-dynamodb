@@ -1,6 +1,7 @@
 'use strict'
 
-const Errors = require('rheactor-value-objects/errors')
+const EntryAlreadyExistsError = require('rheactor-value-objects/errors/entry-already-exists')
+const EntityNotFoundError = require('rheactor-value-objects/errors/entity-not-found')
 
 /**
  * Manages indices for aggregates
@@ -46,7 +47,7 @@ AggregateIndex.prototype.addIfNotPresent = function (type, value, aggregateId) {
   )
     .then((res) => {
       if (res === null) {
-        throw new Errors.EntryAlreadyExistsError('Entry for index "' + index + '" with key "' + value + '" already ' +
+        throw new EntryAlreadyExistsError('Entry for index "' + index + '" with key "' + value + '" already ' +
           'exists. Tried to add aggregate "' + aggregateId + '".')
       }
       return true
@@ -82,7 +83,7 @@ AggregateIndex.prototype.addToListIfNotPresent = function (type, aggregateId) {
   return self.redis.saddAsync(index, aggregateId)
     .then((res) => {
       if (!res) {
-        throw new Errors.EntryAlreadyExistsError('Aggregate "' + aggregateId + '" already member of "' + index + '".')
+        throw new EntryAlreadyExistsError('Aggregate "' + aggregateId + '" already member of "' + index + '".')
       }
       return true
     })
@@ -124,7 +125,7 @@ AggregateIndex.prototype.removeFromList = function (type, aggregateId) {
 AggregateIndex.prototype.find = function (type, value) {
   var self = this
   return self.get(type, value)
-    .catch(Errors.EntityNotFoundError, () => {
+    .catch(err => EntityNotFoundError.is(err), () => {
       return null
     })
 }
@@ -143,7 +144,7 @@ AggregateIndex.prototype.get = function (type, value) {
     .hmgetAsync(self.aggregate + '.' + type + '.index', value)
     .then((res) => {
       if (res[0] === null) {
-        throw new Errors.EntityNotFoundError('Aggregate not found with ' + type + ' "' + value + '"')
+        throw new EntityNotFoundError('Aggregate not found with ' + type + ' "' + value + '"')
       }
       return res[0]
     })
