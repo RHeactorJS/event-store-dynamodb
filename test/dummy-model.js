@@ -10,10 +10,9 @@ function DummyModel (email) {
 }
 util.inherits(DummyModel, AggregateRoot)
 
-DummyModel.$aggregateName = 'dummy'
-
 /**
  * @param {ModelEvent} event
+ * @return {ModelEvent} event
  */
 DummyModel.prototype.applyEvent = function (event) {
   let self = this

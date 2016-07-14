@@ -95,7 +95,7 @@ AggregateRepository.prototype.findById = function (id) {
 }
 
 /**
- * Creates an instance of this repositories aggregate root by appying all events
+ * Creates an instance of this repositories aggregate root by applying all events
  *
  * NOTE: Because the signature of the AggregateRoot's constructor may change
  * over time, we bypass the individual constructor of the Model. The model
@@ -125,7 +125,7 @@ AggregateRepository.prototype.aggregate = function (events) {
  * NOTE: naively returns all entities by fetching them one by one by ID starting
  * from 1 to the current max id.
  *
- * @returns {Promise.<[AggregateRoot]>}
+ * @returns {Promise.<Array.<AggregateRoot>>}
  */
 AggregateRepository.prototype.findAll = function () {
   let self = this
