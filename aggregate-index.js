@@ -1,7 +1,7 @@
 'use strict'
 
 const EntryAlreadyExistsError = require('rheactor-value-objects/errors/entry-already-exists')
-const EntityNotFoundError = require('rheactor-value-objects/errors/entity-not-found')
+const EntryNotFoundError = require('rheactor-value-objects/errors/entry-not-found')
 
 /**
  * Manages indices for aggregates
@@ -125,7 +125,7 @@ AggregateIndex.prototype.removeFromList = function (type, aggregateId) {
 AggregateIndex.prototype.find = function (type, value) {
   var self = this
   return self.get(type, value)
-    .catch(err => EntityNotFoundError.is(err), () => {
+    .catch(err => EntryNotFoundError.is(err), () => {
       return null
     })
 }
@@ -136,7 +136,7 @@ AggregateIndex.prototype.find = function (type, value) {
  * @param {String} type
  * @param {String} value
  * @returns {Promise}
- * @throws EntityNotFoundError
+ * @throws EntryNotFoundError
  */
 AggregateIndex.prototype.get = function (type, value) {
   var self = this
@@ -144,7 +144,7 @@ AggregateIndex.prototype.get = function (type, value) {
     .hmgetAsync(self.aggregate + '.' + type + '.index', value)
     .then((res) => {
       if (res[0] === null) {
-        throw new EntityNotFoundError('Aggregate not found with ' + type + ' "' + value + '"')
+        throw new EntryNotFoundError('Aggregate not found with ' + type + ' "' + value + '"')
       }
       return res[0]
     })

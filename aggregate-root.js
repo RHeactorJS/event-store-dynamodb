@@ -1,7 +1,7 @@
 'use strict'
 
 const Joi = require('joi')
-const ValidationFailedException = require('rheactor-value-objects/errors').ValidationFailedException
+const ValidationFailedError = require('rheactor-value-objects/errors/validation-failed')
 
 /**
  * Base class for aggregates
@@ -32,7 +32,7 @@ AggregateRoot.prototype.persisted = function (aggregateId, createdAt) {
   })
   Joi.validate({aggregateId, createdAt}, schema, {stripUnknown: true}, (err, data) => {
     if (err) {
-      throw new ValidationFailedException('AggregateRoot validation failed', data, err)
+      throw new ValidationFailedError('AggregateRoot validation failed', data, err)
     }
     self.$aggregateMeta.id = '' + data.aggregateId
     self.$aggregateMeta.version = 1
@@ -48,7 +48,7 @@ AggregateRoot.prototype.updated = function (updatedAt) {
   updatedAt = updatedAt || Date.now()
   Joi.validate(updatedAt, Joi.number().min(1), (err, updatedAt) => {
     if (err) {
-      throw new ValidationFailedException('AggregateRoot.updated validation failed', updatedAt, err)
+      throw new ValidationFailedError('AggregateRoot.updated validation failed', updatedAt, err)
     }
     this.$aggregateMeta.updatedAt = updatedAt
     return ++this.$aggregateMeta.version
@@ -63,7 +63,7 @@ AggregateRoot.prototype.deleted = function (deletedAt) {
   deletedAt = deletedAt || Date.now()
   Joi.validate(deletedAt, Joi.number().min(1), (err, deletedAt) => {
     if (err) {
-      throw new ValidationFailedException('AggregateRoot.deleted validation failed', deletedAt, err)
+      throw new ValidationFailedError('AggregateRoot.deleted validation failed', deletedAt, err)
     }
     this.$aggregateMeta.deletedAt = deletedAt
     this.$aggregateMeta.deleted = true

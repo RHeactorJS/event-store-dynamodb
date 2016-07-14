@@ -4,27 +4,27 @@
 
 const AggregateRoot = require('../aggregate-root')
 const expect = require('chai').expect
-const ValidationFailedException = require('rheactor-value-objects/errors/validation-failed')
+const ValidationFailedError = require('rheactor-value-objects/errors/validation-failed')
 
 describe('AggregateRoot', () => {
   describe('.persisted', () => {
-    it('should throw an ValidationFailedException on invalid data', (done) => {
+    it('should throw an ValidationFailedError on invalid data', (done) => {
       let a = new AggregateRoot()
-      expect(a.persisted.bind(a, 0, 0)).to.throw(ValidationFailedException)
+      expect(a.persisted.bind(a, 0, 0)).to.throw(ValidationFailedError)
       done()
     })
   })
   describe('.updated', () => {
-    it('should throw an ValidationFailedException on invalid data', (done) => {
+    it('should throw an ValidationFailedError on invalid data', (done) => {
       let a = new AggregateRoot()
-      expect(a.updated.bind(a, -1)).to.throw(ValidationFailedException)
+      expect(a.updated.bind(a, -1)).to.throw(ValidationFailedError)
       done()
     })
   })
   describe('.deleted', () => {
-    it('should throw an ValidationFailedException on invalid data', (done) => {
+    it('should throw an ValidationFailedError on invalid data', (done) => {
       let a = new AggregateRoot()
-      expect(a.deleted.bind(a, -1)).to.throw(ValidationFailedException)
+      expect(a.deleted.bind(a, -1)).to.throw(ValidationFailedError)
       done()
     })
   })

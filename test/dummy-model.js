@@ -2,7 +2,7 @@
 
 const util = require('util')
 const AggregateRoot = require('../aggregate-root')
-const UnhandledDomainEvent = require('rheactor-value-objects/errors/unhandled-domainevent')
+const UnhandledDomainEvent = require('rheactor-value-objects/errors/unhandled-domain-event')
 
 
 function DummyModel (email) {

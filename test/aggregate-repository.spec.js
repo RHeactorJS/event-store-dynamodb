@@ -8,8 +8,8 @@ const helper = require('./helper')
 const expect = require('chai').expect
 const DummyModel = require('./dummy-model')
 const ModelEvent = require('../model-event')
-const EntityNotFoundError = require('rheactor-value-objects/errors/entity-not-found')
-const EntityDeletedError = require('rheactor-value-objects/errors/entity-deleted')
+const EntryNotFoundError = require('rheactor-value-objects/errors/entry-not-found')
+const EntryDeletedError = require('rheactor-value-objects/errors/entry-deleted')
 
 describe('AggregateRepository', function () {
   before(helper.clearDb)
@@ -96,14 +96,14 @@ describe('AggregateRepository', function () {
   })
 
   describe('.getById()', () => {
-    it('should throw an EntityNotFoundError if entity not found', (done) => {
+    it('should throw an EntryNotFoundError if entity not found', (done) => {
       Promise.try(repository.getById.bind(repository, 9999999))
-        .catch(err => EntityNotFoundError.is(err), (err) => {
+        .catch(err => EntryNotFoundError.is(err), (err) => {
           expect(err.message).to.be.contain('dummy with id "9999999" not found.')
           done()
         })
     })
-    it('should throw an EntityDeletedError if entity is deleted', (done) => {
+    it('should throw an EntryDeletedError if entity is deleted', (done) => {
       const jack = new DummyModel('jack.doe@example.invalid')
       repository.add(jack)
         .then((createdEvent) => {
@@ -115,9 +115,9 @@ describe('AggregateRepository', function () {
             .then(() => {
               Promise
                 .try(repository.getById.bind(repository, persistedJack.aggregateId()))
-                .catch(err => EntityDeletedError.is(err), (err) => {
+                .catch(err => EntryDeletedError.is(err), (err) => {
                   expect(err.message).to.be.contain('dummy with id "' + persistedJack.aggregateId() + '" is deleted.')
-                  expect(err.entity).to.deep.equal(persistedJack)
+                  expect(err.entry).to.deep.equal(persistedJack)
                   done()
                 })
             })

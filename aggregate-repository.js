@@ -4,8 +4,8 @@ const EventStore = require('./event-store')
 const ModelEvent = require('./model-event')
 const _upperFirst = require('lodash/upperFirst')
 const _map = require('lodash/map')
-const EntityNotFoundError = require('rheactor-value-objects/errors/entity-not-found')
-const EntityDeletedError = require('rheactor-value-objects/errors/entity-deleted')
+const EntryNotFoundError = require('rheactor-value-objects/errors/entry-not-found')
+const EntryDeletedError = require('rheactor-value-objects/errors/entry-deleted')
 const Promise = require('bluebird')
 const AggregateRoot = require('./aggregate-root')
 
@@ -148,7 +148,7 @@ AggregateRepository.prototype.findAll = function () {
  *
  * @param {String} id
  * @returns {Promise.<AggregateRoot>}
- * @throws {EntityNotFoundError} if entity is not found
+ * @throws {EntryNotFoundError} if entity is not found
  */
 AggregateRepository.prototype.getById = function (id) {
   let self = this
@@ -156,10 +156,10 @@ AggregateRepository.prototype.getById = function (id) {
     .then(self.aggregate.bind(self))
     .then((aggregate) => {
       if (!aggregate) {
-        throw new EntityNotFoundError(self.aggregateAlias + ' with id "' + id + '" not found.')
+        throw new EntryNotFoundError(self.aggregateAlias + ' with id "' + id + '" not found.')
       }
       if (aggregate.isDeleted()) {
-        throw new EntityDeletedError(self.aggregateAlias + ' with id "' + id + '" is deleted.', aggregate)
+        throw new EntryDeletedError(self.aggregateAlias + ' with id "' + id + '" is deleted.', aggregate)
       }
       return aggregate
     })
