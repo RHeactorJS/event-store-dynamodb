@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/RHeactor/event-store.git"
+    "url": "https://github.com/ResourcefulHumans/rheactor-event-store.git"
   },
   "author": "Resourceful Humans <info@resourceful-humans.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/RHeactor/event-store/issues"
+    "url": "https://github.com/ResourcefulHumans/rheactor-event-store/issues"
   },
-  "homepage": "https://github.com/RHeactor/event-store#readme",
+  "homepage": "https://github.com/ResourcefulHumans/rheactor-event-store#readme",
   "dependencies": {
     "bluebird": "^3.4.1",
     "joi": "^9.0.0",
