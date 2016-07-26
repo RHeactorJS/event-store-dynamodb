@@ -131,7 +131,7 @@ AggregateIndex.prototype.find = function (type, value) {
 }
 
 /**
- * Retrun an aggregateId by the given index type and value
+ * Return an aggregateId by the given index type and value
  *
  * @param {String} type
  * @param {String} value
@@ -148,6 +148,18 @@ AggregateIndex.prototype.get = function (type, value) {
       }
       return res[0]
     })
+}
+
+/**
+ * Return all aggregateIds in the given index type
+ *
+ * @param {String} type
+ * @returns {Promise}
+ */
+AggregateIndex.prototype.getAll = function (type) {
+  var self = this
+  return self.redis
+    .hvalsAsync(self.aggregate + '.' + type + '.index')
 }
 
 module.exports = AggregateIndex
