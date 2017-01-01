@@ -7,7 +7,7 @@
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "test": "environment=testing mocha --reporter=dot --timeout=1350 test/\\*.js",
     "test:coverage": "environment=testing istanbul cover _mocha test/\\*.js",
-    "test:coverage-travis": "environment=testing istanbul cover _mocha --report lcovonly -- -R dot --timeout=1350 test/\\*.js && cat ./coverage/lcov.info | codacy-coverage && rm -rf ./coverage",
+    "test:coverage-travis": "environment=testing istanbul cover _mocha --report lcovonly -- -R dot --timeout=1350 test/\\*.js && codeclimate-test-reporter < ./coverage/lcov.info && rm -rf ./coverage",
     "precommit": "npm run lint",
     "commitmsg": "validate-commit-msg"
   },
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "codacy-coverage": "^2.0.0",
+    "codeclimate-test-reporter": "^0.4.0",
     "istanbul": "^0.4.4",
     "husky": "<2.0.0",
     "mocha": "^3.0.0",
