@@ -1,12 +1,10 @@
-'use strict'
-
 /* global describe, it, before */
 
-const AggregateIndex = require('../aggregate-index')
-const Promise = require('bluebird')
-const helper = require('./helper')
-const expect = require('chai').expect
-const EntryAlreadyExistsError = require('rheactor-value-objects/errors/entry-already-exists')
+import {AggregateIndex} from '../src/aggregate-index'
+import {Promise} from 'bluebird'
+import helper from './helper'
+import {expect} from 'chai'
+import {EntryAlreadyExistsError} from 'rheactor-value-objects/errors'
 
 describe('AggregateIndex', () => {
   before(helper.clearDb)

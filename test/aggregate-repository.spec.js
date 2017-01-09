@@ -1,15 +1,12 @@
-'use strict'
-
 /* global describe, it, before */
 
-const AggregateRepository = require('../aggregate-repository')
-const Promise = require('bluebird')
-const helper = require('./helper')
-const expect = require('chai').expect
-const DummyModel = require('./dummy-model')
-const ModelEvent = require('../model-event')
-const EntryNotFoundError = require('rheactor-value-objects/errors/entry-not-found')
-const EntryDeletedError = require('rheactor-value-objects/errors/entry-deleted')
+import {AggregateRepository} from '../src/aggregate-repository'
+import {Promise} from 'bluebird'
+import helper from './helper'
+import {expect} from 'chai'
+import {DummyModel} from './dummy-model'
+import {ModelEvent} from '../src/model-event'
+import {EntryNotFoundError, EntryDeletedError} from 'rheactor-value-objects/errors'
 
 describe('AggregateRepository', function () {
   before(helper.clearDb)
@@ -115,6 +112,9 @@ describe('AggregateRepository', function () {
                 .catch(err => EntryDeletedError.is(err), (err) => {
                   expect(err.message).to.be.contain('dummy with id "' + persistedJack.aggregateId() + '" is deleted.')
                   expect(err.entry).to.deep.equal(persistedJack)
+                })
+                .catch(err => {
+                  console.log(err)
                 })
             })
         })

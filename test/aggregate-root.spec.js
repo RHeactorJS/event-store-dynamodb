@@ -1,10 +1,8 @@
-'use strict'
-
 /* global describe, it */
 
-const AggregateRoot = require('../aggregate-root')
-const expect = require('chai').expect
-const ValidationFailedError = require('rheactor-value-objects/errors/validation-failed')
+import {AggregateRoot} from '../src/aggregate-root'
+import {expect} from 'chai'
+import {ValidationFailedError} from 'rheactor-value-objects/errors'
 
 describe('AggregateRoot', () => {
   describe('.persisted', () => {

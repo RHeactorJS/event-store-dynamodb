@@ -1,12 +1,10 @@
-'use strict'
-
 /* global describe, it, before */
 
-const EventStore = require('../event-store')
-const ModelEvent = require('../model-event')
-const Promise = require('bluebird')
-const helper = require('./helper')
-const expect = require('chai').expect
+import {EventStore} from '../src/event-store'
+import {ModelEvent} from '../src/model-event'
+import {Promise} from 'bluebird'
+import helper from './helper'
+import {expect} from 'chai'
 
 describe('EventStore', function () {
   before(helper.clearDb)

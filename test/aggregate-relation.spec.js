@@ -1,13 +1,11 @@
-'use strict'
-
 /* global describe, it, before */
 
-const AggregateRelation = require('../aggregate-relation')
-const AggregateRepository = require('../aggregate-repository')
-const Promise = require('bluebird')
-const helper = require('./helper')
-const expect = require('chai').expect
-const DummyModel = require('./dummy-model')
+import {AggregateRelation} from '../src/aggregate-relation'
+import {AggregateRepository} from '../src/aggregate-repository'
+import {Promise} from 'bluebird'
+import helper from './helper'
+import {expect} from 'chai'
+import {DummyModel} from './dummy-model'
 
 describe('AggregateRelation', function () {
   before(helper.clearDb)

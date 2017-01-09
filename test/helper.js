@@ -1,15 +1,12 @@
-'use strict'
-
-const Promise = require('bluebird')
-const redis = require('redis')
+import {Promise} from 'bluebird'
+import redis from 'redis'
 Promise.promisifyAll(redis.RedisClient.prototype)
 Promise.promisifyAll(redis.Multi.prototype)
 
 const client = redis.createClient()
 client.select(8)
 
-exports.clearDb = function () {
-  return client.flushdb()
+export default {
+  clearDb: client.flushdb.bind(client),
+  redis: client
 }
-
-exports.redis = client
