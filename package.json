@@ -1,6 +1,7 @@
 {
   "name": "rheactor-event-store",
   "description": "Implementation of an event store based on redis",
+  "version": "0.0.0-development",
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=testing mocha --compilers js:babel-register --reporter=dot --timeout=1350 test/\\*.js",
