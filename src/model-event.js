@@ -1,3 +1,5 @@
+import {irreducible} from 'tcomb'
+
 export class ModelEvent {
   /**
    * If a model is modified the modifying method should return and instance of this
@@ -16,4 +18,16 @@ export class ModelEvent {
     Object.defineProperty(this, 'createdAt', {value: createdAt || Date.now(), enumerable: true})
     Object.defineProperty(this, 'createdBy', {value: createdBy, enumerable: true})
   }
+
+  /**
+   * Returns true if x is of type ModelEvent
+   *
+   * @param {object} x
+   * @returns {boolean}
+   */
+  static is (x) {
+    return (x instanceof ModelEvent) || (x && x.constructor && x.constructor.name === ModelEvent.name && 'aggregateId' in x && 'name' in x && 'data' in x && 'createdAt' in x && 'createdBy' in x)
+  }
 }
+
+export const ModelEventType = irreducible('ModelEventType', ModelEvent.is)

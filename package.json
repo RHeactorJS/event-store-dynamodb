@@ -25,7 +25,6 @@
   "dependencies": {
     "bluebird": "^3.4.7",
     "joi": "^10.1.0",
-    "lodash": "^4.17.4",
     "redis": "^2.6.3",
     "rheactor-value-objects": "^5.0.0",
     "tcomb": "^3.2.16"

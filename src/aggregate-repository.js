@@ -1,9 +1,11 @@
 import {EventStore} from './event-store'
-import {ModelEvent} from './model-event'
-import {upperFirst as _upperFirst, map as _map} from 'lodash'
+import {ModelEvent, ModelEventType} from './model-event'
 import {EntryNotFoundError, EntryDeletedError} from 'rheactor-value-objects/errors'
 import {Promise} from 'bluebird'
 import {AggregateRoot} from './aggregate-root'
+import {list} from 'tcomb'
+
+const ModelEventTypeList = list(ModelEventType)
 
 export class AggregateRepository {
 
@@ -17,6 +19,7 @@ export class AggregateRepository {
   constructor (aggregateRoot, aggregateAlias, redis) {
     this.aggregateRoot = aggregateRoot
     this.aggregateAlias = aggregateAlias
+    this.aggregateAliasPrefix = aggregateAlias.charAt(0).toUpperCase() + aggregateAlias.slice(1)
     this.eventStore = new EventStore(aggregateAlias, redis)
     this.redis = redis
   }
@@ -33,7 +36,7 @@ export class AggregateRepository {
   add (aggregate) {
     return this.redis.incrAsync(this.aggregateAlias + ':id')
       .then((id) => {
-        let event = new ModelEvent(id, _upperFirst(this.aggregateAlias) + 'CreatedEvent', aggregate)
+        const event = new ModelEvent(id, this.aggregateAliasPrefix + 'CreatedEvent', aggregate)
         return this.persistEvent(event)
           .then(() => {
             aggregate.applyEvent(event)
@@ -49,6 +52,7 @@ export class AggregateRepository {
    * @return {Promise.<ModelEvent>}
    */
   persistEvent (modelEvent) {
+    ModelEventType(modelEvent)
     return this.eventStore
       .persist(modelEvent)
       .then(() => {
@@ -65,7 +69,7 @@ export class AggregateRepository {
    * @returns {Promise.<ModelEvent>}
    */
   remove (aggregate) {
-    let event = new ModelEvent(aggregate.aggregateId(), _upperFirst(this.aggregateAlias) + 'DeletedEvent', aggregate)
+    let event = new ModelEvent(aggregate.aggregateId(), this.aggregateAliasPrefix + 'DeletedEvent', aggregate)
     return this.persistEvent(event)
       .then(() => {
         aggregate.applyEvent(event)
@@ -103,12 +107,13 @@ export class AggregateRepository {
    * @returns {AggregateRoot}
    */
   aggregate (events) {
+    ModelEventTypeList(events)
     if (!events.length) {
       return
     }
     let model = Object.create(this.aggregateRoot.prototype) // Instantiate model
     AggregateRoot.call(model) // Bypass the model constructor, but init necessary data
-    _map(events, model.applyEvent.bind(model))
+    events.map(model.applyEvent.bind(model))
     return model
   }
 

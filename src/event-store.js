@@ -1,5 +1,5 @@
 import {Promise} from 'bluebird'
-import {ModelEvent} from './model-event'
+import {ModelEvent, ModelEventType} from './model-event'
 
 export class EventStore {
   /**
@@ -28,6 +28,7 @@ export class EventStore {
    * @return {Promise}
    */
   persist (event) {
+    ModelEventType(event)
     let aggregateEvents = this.aggregate + '.events.' + event.aggregateId
     let data = {
       eventType: event.name,
