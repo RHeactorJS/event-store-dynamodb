@@ -1,4 +1,4 @@
-import {String as StringType, Date as DateType} from 'tcomb'
+import {String as StringType, Date as DateType, irreducible} from 'tcomb'
 
 export class AggregateRoot {
   /**
@@ -119,4 +119,16 @@ export class AggregateRoot {
   deletedAt () {
     return this.$aggregateMeta.deletedAt
   }
+
+  /**
+   * Returns true if x is of type AggregateRoot
+   *
+   * @param {object} x
+   * @returns {boolean}
+   */
+  static is (x) {
+    return (x instanceof AggregateRoot) || (x && x.constructor && x.constructor.name === AggregateRoot.name && '$aggregateMeta' in x)
+  }
 }
+
+export const AggregateRootType = irreducible('AggregateRootType', AggregateRoot.is)
