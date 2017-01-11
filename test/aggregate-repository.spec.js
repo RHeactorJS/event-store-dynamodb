@@ -65,7 +65,7 @@ describe('AggregateRepository', function () {
   describe('.findById()', () => {
     it(
       'should return undefined if entity not found',
-      () => repository.findById(9999999)
+      () => repository.findById('9999999')
         .then((user) => {
           expect(user).to.equal(undefined)
         })
@@ -92,7 +92,7 @@ describe('AggregateRepository', function () {
   describe('.getById()', () => {
     it(
       'should throw an EntryNotFoundError if entity not found',
-      () => Promise.try(repository.getById.bind(repository, 9999999))
+      () => Promise.try(repository.getById.bind(repository, '9999999'))
         .catch(err => EntryNotFoundError.is(err), (err) => {
           expect(err.message).to.be.contain('dummy with id "9999999" not found.')
         })

@@ -36,7 +36,7 @@ export class AggregateRepository {
   add (aggregate) {
     return this.redis.incrAsync(this.aggregateAlias + ':id')
       .then((id) => {
-        const event = new ModelEvent(id, this.aggregateAliasPrefix + 'CreatedEvent', aggregate)
+        const event = new ModelEvent('' + id, this.aggregateAliasPrefix + 'CreatedEvent', aggregate)
         return this.persistEvent(event)
           .then(() => {
             aggregate.applyEvent(event)

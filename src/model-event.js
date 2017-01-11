@@ -1,4 +1,5 @@
-import {irreducible} from 'tcomb'
+import {irreducible, String as StringType, Date as DateType, Object as ObjectType, maybe} from 'tcomb'
+const MaybeStringType = maybe(StringType)
 
 export class ModelEvent {
   /**
@@ -7,15 +8,20 @@ export class ModelEvent {
    *
    * @param {String} aggregateId The id that identifies a specific aggregate
    * @param {String} name The name of the event
-   * @param {object} data The data associated with the event
-   * @param {Number} createdAt The time of the creation of the event
+   * @param {Object} data The data associated with the event
+   * @param {Date} createdAt The time of the creation of the event
    * @param {String} createdBy Information about the author of the event
    */
-  constructor (aggregateId, name, data, createdAt, createdBy) {
+  constructor (aggregateId, name, data = {}, createdAt = new Date(), createdBy) {
+    StringType(aggregateId)
+    StringType(name)
+    ObjectType(data)
+    DateType(createdAt)
+    MaybeStringType(createdBy)
     Object.defineProperty(this, 'aggregateId', {value: aggregateId, enumerable: true})
     Object.defineProperty(this, 'name', {value: name, enumerable: true})
-    Object.defineProperty(this, 'data', {value: data || {}, enumerable: true})
-    Object.defineProperty(this, 'createdAt', {value: createdAt || Date.now(), enumerable: true})
+    Object.defineProperty(this, 'data', {value: data, enumerable: true})
+    Object.defineProperty(this, 'createdAt', {value: createdAt, enumerable: true})
     Object.defineProperty(this, 'createdBy', {value: createdBy, enumerable: true})
   }
 

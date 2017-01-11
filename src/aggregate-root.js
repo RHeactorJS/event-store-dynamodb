@@ -1,5 +1,4 @@
-import Joi from 'joi'
-import {ValidationFailedError} from 'rheactor-value-objects/errors'
+import {String as StringType, Date as DateType} from 'tcomb'
 
 export class AggregateRoot {
   /**
@@ -20,53 +19,35 @@ export class AggregateRoot {
 
   /**
    * @param {String} aggregateId
-   * @param {Number} createdAt
+   * @param {Date} createdAt
    */
-  persisted (aggregateId, createdAt) {
-    createdAt = createdAt || Date.now()
-    let schema = Joi.object().keys({
-      aggregateId: Joi.alternatives().try(Joi.number().min(1), Joi.string().trim()).required(),
-      createdAt: Joi.number().min(1)
-    })
-    Joi.validate({aggregateId, createdAt}, schema, {stripUnknown: true}, (err, data) => {
-      if (err) {
-        throw new ValidationFailedError('AggregateRoot validation failed', data, err)
-      }
-      this.$aggregateMeta.id = '' + data.aggregateId
-      this.$aggregateMeta.version = 1
-      this.$aggregateMeta.createdAt = data.createdAt
-    })
+  persisted (aggregateId, createdAt = new Date()) {
+    StringType(aggregateId)
+    DateType(createdAt)
+    this.$aggregateMeta.id = aggregateId
+    this.$aggregateMeta.version = 1
+    this.$aggregateMeta.createdAt = createdAt
   }
 
   /**
-   * @param {Number} updatedAt
-   * @returns {number}
+   * @param {Date} updatedAt
+   * @returns {Number}
    */
-  updated (updatedAt) {
-    updatedAt = updatedAt || Date.now()
-    Joi.validate(updatedAt, Joi.number().min(1), (err, updatedAt) => {
-      if (err) {
-        throw new ValidationFailedError('AggregateRoot.updated validation failed', updatedAt, err)
-      }
-      this.$aggregateMeta.updatedAt = updatedAt
-      return ++this.$aggregateMeta.version
-    })
+  updated (updatedAt = new Date()) {
+    DateType(updatedAt)
+    this.$aggregateMeta.updatedAt = updatedAt
+    return ++this.$aggregateMeta.version
   }
 
   /**
-   * @param {Number} deletedAt
+   * @param {Date} deletedAt
    * @returns {number}
    */
-  deleted (deletedAt) {
-    deletedAt = deletedAt || Date.now()
-    Joi.validate(deletedAt, Joi.number().min(1), (err, deletedAt) => {
-      if (err) {
-        throw new ValidationFailedError('AggregateRoot.deleted validation failed', deletedAt, err)
-      }
-      this.$aggregateMeta.deletedAt = deletedAt
-      this.$aggregateMeta.deleted = true
-      return ++this.$aggregateMeta.version
-    })
+  deleted (deletedAt = new Date()) {
+    DateType(deletedAt)
+    this.$aggregateMeta.deletedAt = deletedAt
+    this.$aggregateMeta.deleted = true
+    return ++this.$aggregateMeta.version
   }
 
   /**
@@ -138,5 +119,4 @@ export class AggregateRoot {
   deletedAt () {
     return this.$aggregateMeta.deletedAt
   }
-
 }
