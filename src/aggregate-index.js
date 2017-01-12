@@ -1,4 +1,4 @@
-import {EntryAlreadyExistsError, EntryNotFoundError} from 'rheactor-value-objects/errors'
+import {EntryAlreadyExistsError, EntryNotFoundError} from '@resourcefulhumans/rheactor-errors'
 
 export class AggregateIndex {
   /**

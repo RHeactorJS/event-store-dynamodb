@@ -4,7 +4,7 @@ import {AggregateIndex} from '../src/aggregate-index'
 import {Promise} from 'bluebird'
 import helper from './helper'
 import {expect} from 'chai'
-import {EntryAlreadyExistsError} from 'rheactor-value-objects/errors'
+import {EntryAlreadyExistsError} from '@resourcefulhumans/rheactor-errors'
 
 describe('AggregateIndex', () => {
   before(helper.clearDb)

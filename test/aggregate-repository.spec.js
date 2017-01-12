@@ -6,7 +6,7 @@ import helper from './helper'
 import {expect} from 'chai'
 import {DummyModel} from './dummy-model'
 import {ModelEvent} from '../src/model-event'
-import {EntryNotFoundError, EntryDeletedError} from 'rheactor-value-objects/errors'
+import {EntryNotFoundError, EntryDeletedError} from '@resourcefulhumans/rheactor-errors'
 
 describe('AggregateRepository', function () {
   before(helper.clearDb)

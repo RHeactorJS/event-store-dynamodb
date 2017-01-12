@@ -8,7 +8,7 @@
     "test:coverage": "NODE_ENV=nyc babel src --out-dir instrumented-src > /dev/null && nyc --reporter=text-summary --reporter=lcov npm run test",
     "test:coverage-travis": "npm run test:coverage && codeclimate-test-reporter < ./coverage/lcov.info && rm -rf ./coverage",
     "lint": "standard",
-    "semantic-release": "semantic-release pre && cp package.json dist && npm publish dist && semantic-release post",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "precommit": "npm run lint && npm test",
     "commitmsg": "validate-commit-msg"
   },
@@ -25,7 +25,7 @@
   "dependencies": {
     "bluebird": "^3.4.7",
     "redis": "^2.6.3",
-    "rheactor-value-objects": "^7.0.0",
+    "@resourcefulhumans/rheactor-errors": "1.x",
     "tcomb": "^3.2.16"
   },
   "devDependencies": {
@@ -42,5 +42,11 @@
     "semantic-release": "^6.3.2",
     "standard": "^8.6.0",
     "validate-commit-msg": "^2.8.2"
-  }
+  },
+  "files": [
+    "dist",
+    "src",
+    "test",
+    "README.md"
+  ]
 }
