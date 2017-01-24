@@ -128,7 +128,18 @@ export class AggregateRoot {
    * @returns {boolean}
    */
   static is (x) {
-    return (x instanceof AggregateRoot) || (x && x.constructor && x.constructor.name === AggregateRoot.name && '$aggregateMeta' in x)
+    return (x instanceof AggregateRoot) || (
+        x &&
+        x.constructor &&
+        x.constructor.name === AggregateRoot.name &&
+        '$aggregateMeta' in x &&
+        'id' in x.$aggregateMeta &&
+        'version' in x.$aggregateMeta &&
+        'deleted' in x.$aggregateMeta &&
+        'createdAt' in x.$aggregateMeta &&
+        'updatedAt' in x.$aggregateMeta &&
+        'deletedAt' in x.$aggregateMeta
+      )
   }
 }
 

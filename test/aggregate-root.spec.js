@@ -85,4 +85,23 @@ describe('AggregateRoot', () => {
       expect(a.modifiedAt()).to.equal(updatedAt)
     })
   })
+  describe('.is()', () => {
+    it('should return true, if AggregateRoot is passed', () => {
+      expect(AggregateRoot.is(new AggregateRoot())).to.equal(true)
+    })
+    it('should return true, if a similar object is passed', () => {
+      const root = {
+        constructor: {name: AggregateRoot.name},
+        $aggregateMeta: {
+          id: null,
+          version: null,
+          deleted: false,
+          createdAt: null,
+          updatedAt: null,
+          deletedAt: null
+        }
+      }
+      expect(AggregateRoot.is(root)).to.equal(true)
+    })
+  })
 })
