@@ -1,5 +1,5 @@
-import {irreducible, String as StringType, Date as DateType, Object as ObjectType, maybe} from 'tcomb'
-const MaybeStringType = maybe(StringType)
+import {list, String as StringType, irreducible, Object as ObjectType, Date as DateType} from 'tcomb'
+import {MaybeStringType, AggregateIdType} from './types'
 
 export class ModelEvent {
   /**
@@ -13,7 +13,7 @@ export class ModelEvent {
    * @param {String} createdBy Information about the author of the event
    */
   constructor (aggregateId, name, data = {}, createdAt = new Date(), createdBy) {
-    StringType(aggregateId)
+    AggregateIdType(aggregateId)
     StringType(name)
     ObjectType(data)
     DateType(createdAt)
@@ -37,3 +37,4 @@ export class ModelEvent {
 }
 
 export const ModelEventType = irreducible('ModelEventType', ModelEvent.is)
+export const ModelEventTypeList = list(ModelEventType)

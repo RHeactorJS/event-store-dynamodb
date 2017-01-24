@@ -1,4 +1,5 @@
-import {String as StringType, Date as DateType, irreducible} from 'tcomb'
+import {AggregateIdType} from './types'
+import {Date as DateType, irreducible} from 'tcomb'
 
 export class AggregateRoot {
   /**
@@ -22,7 +23,7 @@ export class AggregateRoot {
    * @param {Date} createdAt
    */
   persisted (aggregateId, createdAt = new Date()) {
-    StringType(aggregateId)
+    AggregateIdType(aggregateId)
     DateType(createdAt)
     this.$aggregateMeta.id = aggregateId
     this.$aggregateMeta.version = 1

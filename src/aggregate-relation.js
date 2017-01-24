@@ -1,6 +1,5 @@
-import {String as StringType, Number as NumberType, union} from 'tcomb'
-
-const scalarType = union([StringType, NumberType])
+import {AggregateIdType} from './types'
+import {String as StringType} from 'tcomb'
 
 export class AggregateRelation {
   /**
@@ -25,7 +24,7 @@ export class AggregateRelation {
    */
   findByRelatedId (relation, relatedId) {
     StringType(relation)
-    scalarType(relatedId)
+    AggregateIdType(relatedId)
     let self = this
     return self.redis.smembersAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId)
       .map(self.repository.findById.bind(self.repository))
@@ -47,8 +46,8 @@ export class AggregateRelation {
    */
   addRelatedId (relation, relatedId, aggregateId) {
     StringType(relation)
-    scalarType(relatedId)
-    scalarType(aggregateId)
+    AggregateIdType(relatedId)
+    AggregateIdType(aggregateId)
     let self = this
     return self.redis.saddAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId, aggregateId)
   }
@@ -63,8 +62,8 @@ export class AggregateRelation {
    */
   removeRelatedId (relation, relatedId, aggregateId) {
     StringType(relation)
-    scalarType(relatedId)
-    scalarType(aggregateId)
+    AggregateIdType(relatedId)
+    AggregateIdType(aggregateId)
     let self = this
     return self.redis.sremAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId, aggregateId)
   }

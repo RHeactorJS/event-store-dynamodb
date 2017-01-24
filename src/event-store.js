@@ -1,6 +1,6 @@
 import {Promise} from 'bluebird'
 import {ModelEvent, ModelEventType} from './model-event'
-import {String as StringType} from 'tcomb'
+import {AggregateIdType} from './types'
 
 export class EventStore {
   /**
@@ -49,7 +49,7 @@ export class EventStore {
    * @return {Promise.<Array.<ModelEvent>>}
    */
   fetch (aggregateId) {
-    StringType(aggregateId)
+    AggregateIdType(aggregateId)
     let aggregateEvents = this.aggregate + '.events.' + aggregateId
     let start = 0
     let fetchedEvents = []
@@ -78,4 +78,3 @@ export class EventStore {
   }
 
 }
-
