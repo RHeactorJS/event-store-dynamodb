@@ -132,13 +132,16 @@ export class AggregateRoot {
         x &&
         x.constructor &&
         x.constructor.name === AggregateRoot.name &&
-        '$aggregateMeta' in x &&
-        'id' in x.$aggregateMeta &&
-        'version' in x.$aggregateMeta &&
-        'deleted' in x.$aggregateMeta &&
-        'createdAt' in x.$aggregateMeta &&
-        'updatedAt' in x.$aggregateMeta &&
-        'deletedAt' in x.$aggregateMeta
+        'persisted' in x &&
+        'updated' in x &&
+        'deleted' in x &&
+        'aggregateVersion' in x &&
+        'aggregateId' in x &&
+        'isDeleted' in x &&
+        'createdAt' in x &&
+        'modifiedAt' in x &&
+        'updatedAt' in x &&
+        'deletedAt' in x
       )
   }
 }

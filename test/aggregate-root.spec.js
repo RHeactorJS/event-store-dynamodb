@@ -92,14 +92,16 @@ describe('AggregateRoot', () => {
     it('should return true, if a similar object is passed', () => {
       const root = {
         constructor: {name: AggregateRoot.name},
-        $aggregateMeta: {
-          id: null,
-          version: null,
-          deleted: false,
-          createdAt: null,
-          updatedAt: null,
-          deletedAt: null
-        }
+        persisted: () => {},
+        updated: () => {},
+        deleted: () => {},
+        aggregateVersion: () => {},
+        aggregateId: () => {},
+        isDeleted: () => {},
+        createdAt: () => {},
+        modifiedAt: () => {},
+        updatedAt: () => {},
+        deletedAt: () => {}
       }
       expect(AggregateRoot.is(root)).to.equal(true)
     })
