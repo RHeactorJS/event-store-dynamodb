@@ -22,9 +22,7 @@ describe('EventStore', function () {
         eventStore.persist(new ModelEvent('17', 'SomeEvent', {foo: 'bar'}, d1)),
         eventStore.persist(new ModelEvent('17', 'SomeOtherEvent', {foo: 'baz'}, undefined, 'John Doe'))
       )
-      .then(() => {
-        return eventStore.fetch('17')
-      })
+      .then(() => eventStore.fetch('17'))
       .then((res) => {
         expect(res.length).to.equal(2)
         expect(res[0]).to.be.instanceof(ModelEvent)
@@ -39,6 +37,19 @@ describe('EventStore', function () {
         expect(res[1].createdAt).to.be.a('Date')
         expect(res[1].createdAt).to.be.above(d1) // Use new Date() as default createdAt
         expect(res[1].createdBy).to.equal('John Doe')
+      })
+  })
+
+  it('should store handle events without a created date', () => {
+    let d1 = new Date('1970-01-01T00:00:00+00:00')
+    return Promise.resolve(helper.redis.rpushAsync('user.events.42', JSON.stringify({eventType: 'SomeEventWithOutCreatedDate'})))
+      .then(() => eventStore.fetch('42'))
+      .then((res) => {
+        expect(res.length).to.equal(1)
+        expect(res[0]).to.be.instanceof(ModelEvent)
+        expect(res[0].name).to.equal('SomeEventWithOutCreatedDate')
+        expect(res[0].createdAt).to.be.a('Date')
+        expect(res[0].createdAt).to.at.least(d1)
       })
   })
 })
