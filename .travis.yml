@@ -7,12 +7,12 @@ notifications:
   email: false
 services:
   - redis-server
-node_js:
-  - 'stable'
 before_install:
-  - npm i -g npm@^2.0.0
-before_script:
+  - npm install -g npm-install-peers
+install:
+  - npm install
   - npm prune
+  - npm-install-peers
 script:
   - npm run lint
   - npm run test:coverage-travis
@@ -22,3 +22,8 @@ after_success:
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
+matrix:
+  include:
+    - node_js: 'node'
+    - node_js: '6'
+    - node_js: '4'
