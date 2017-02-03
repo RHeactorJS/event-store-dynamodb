@@ -72,8 +72,9 @@ export class EventStore {
     }
     return fetchEvents(start)
       .map((e) => {
-        let event = JSON.parse(e)
-        return new ModelEvent(aggregateId, event.eventType, event.eventPayload, new Date(event.eventCreatedAt), event.eventCreatedBy)
+        const event = JSON.parse(e)
+        const createdAt = new Date(event.eventCreatedAt || 0) // events did not always have this
+        return new ModelEvent(aggregateId, event.eventType, event.eventPayload, createdAt, event.eventCreatedBy)
       })
   }
 
