@@ -1,6 +1,7 @@
 /* global describe, it */
 
 import {AggregateRoot} from '../src/aggregate-root'
+import {ModelEvent} from '../src/model-event'
 import {expect} from 'chai'
 
 describe('AggregateRoot', () => {
@@ -104,6 +105,12 @@ describe('AggregateRoot', () => {
         deletedAt: () => {}
       }
       expect(AggregateRoot.is(root)).to.equal(true)
+    })
+  })
+  describe('.applyEvent()', () => {
+    it('should throw an exception if not implemented', () => {
+      const m = new AggregateRoot()
+      expect(() => m.applyEvent(new ModelEvent('17', 'SomeEvent'))).to.throw(/UnhandledDomainEventError/)
     })
   })
 })
