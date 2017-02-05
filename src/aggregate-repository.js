@@ -2,7 +2,8 @@ import {EventStore} from './event-store'
 import {ModelEvent, ModelEventType, ModelEventTypeList} from './model-event'
 import {EntryNotFoundError, EntryDeletedError} from '@resourcefulhumans/rheactor-errors'
 import {Promise} from 'bluebird'
-import {AggregateRoot} from './aggregate-root'
+import {AggregateRoot, AggregateRootType} from './aggregate-root'
+import {MaybeStringType} from './types'
 
 export class AggregateRepository {
 
@@ -23,17 +24,20 @@ export class AggregateRepository {
 
   /**
    * Generic method for add aggregates to the collection.
-   * The repository will assign an ID to them
+   * The repository will assign an ID to them.
    *
-   * Modifies the aggregate.
+   * Calls applyEvent with the created event on the aggregate.
    *
    * @param {AggregateRoot} aggregate
+   * @param {String} createdBy
    * @returns {Promise.<ModelEvent>}
    */
-  add (aggregate) {
+  add (aggregate, createdBy) {
+    AggregateRootType(aggregate)
+    MaybeStringType(createdBy)
     return this.redis.incrAsync(this.aggregateAlias + ':id')
       .then((id) => {
-        const event = new ModelEvent('' + id, this.aggregateAliasPrefix + 'CreatedEvent', aggregate)
+        const event = new ModelEvent('' + id, this.aggregateAliasPrefix + 'CreatedEvent', aggregate, new Date(), createdBy)
         return this.persistEvent(event)
           .then(() => {
             aggregate.applyEvent(event)
@@ -50,23 +54,22 @@ export class AggregateRepository {
    */
   persistEvent (modelEvent) {
     ModelEventType(modelEvent)
-    return this.eventStore
-      .persist(modelEvent)
-      .then(() => {
-        return modelEvent
-      })
+    return this.eventStore.persist(modelEvent).then(() => modelEvent)
   }
 
   /**
    * Generic method for removing aggregates from the collection
    *
-   * Modifies the aggregate.
+   * Calls applyEvent with the created event on the aggregate.
    *
    * @param {AggregateRoot} aggregate
+   * @param {String} createdBy
    * @returns {Promise.<ModelEvent>}
    */
-  remove (aggregate) {
-    let event = new ModelEvent(aggregate.aggregateId(), this.aggregateAliasPrefix + 'DeletedEvent', aggregate)
+  remove (aggregate, createdBy) {
+    AggregateRootType(aggregate)
+    MaybeStringType(createdBy)
+    const event = new ModelEvent(aggregate.aggregateId(), this.aggregateAliasPrefix + 'DeletedEvent', aggregate, new Date(), createdBy)
     return this.persistEvent(event)
       .then(() => {
         aggregate.applyEvent(event)
@@ -156,5 +159,4 @@ export class AggregateRepository {
         return aggregate
       })
   }
-
 }

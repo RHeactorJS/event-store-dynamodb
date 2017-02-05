@@ -25,11 +25,13 @@ describe('AggregateRepository', function () {
     it('should add entities', () => {
       const john = new DummyModel('john.doe@example.invalid')
       const jane = new DummyModel('jane.doe@example.invalid')
-      return Promise.join(repository.add(john), repository.add(jane))
+      return Promise.join(repository.add(john, 'someAuthor'), repository.add(jane))
         .spread((event1, event2) => {
           expect(event1).to.be.instanceOf(ModelEvent)
           expect(event1.name).to.equal('DummyCreatedEvent')
+          expect(event1.createdBy).to.equal('someAuthor')
           expect(event2).to.be.instanceOf(ModelEvent)
+          expect(event2.createdBy).to.equal(undefined)
           return Promise
             .join(repository.getById(event1.aggregateId), repository.getById(event2.aggregateId))
             .spread((u1, u2) => {
@@ -52,10 +54,11 @@ describe('AggregateRepository', function () {
         .then((persistedMike) => {
           expect(persistedMike.isDeleted()).to.equal(false)
           return repository
-            .remove(persistedMike)
+            .remove(persistedMike, 'someAuthor')
             .then((deletedEvent) => {
               expect(deletedEvent).to.be.instanceOf(ModelEvent)
               expect(deletedEvent.name).to.equal('DummyDeletedEvent')
+              expect(deletedEvent.createdBy).to.equal('someAuthor')
               expect(persistedMike.isDeleted()).to.equal(true)
             })
         })
