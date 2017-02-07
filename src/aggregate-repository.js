@@ -3,7 +3,8 @@ import {ModelEvent, ModelEventType, ModelEventTypeList} from './model-event'
 import {EntryNotFoundError, EntryDeletedError} from '@resourcefulhumans/rheactor-errors'
 import {Promise} from 'bluebird'
 import {AggregateRoot, AggregateRootType} from './aggregate-root'
-import {MaybeStringType} from './types'
+import {MaybeStringType, AggregateIdType} from './types'
+import {irreducible} from 'tcomb'
 
 export class AggregateRepository {
 
@@ -84,8 +85,9 @@ export class AggregateRepository {
    * @returns {Promise.<AggregateRoot>} or undefined if not found
    */
   findById (id) {
+    AggregateIdType(id)
     return this.eventStore.fetch(id)
-      .then(this.aggregate.bind(this))
+      .then(events => this.aggregate(events))
       .then((aggregate) => {
         if (!aggregate) return
         return aggregate.isDeleted() ? undefined : aggregate
@@ -103,8 +105,10 @@ export class AggregateRepository {
    * code "new MyExampleModel(arg)" but can handle changing payload of the created
    * event over time.
    *
+   * @deprecated Because this method bypasses the Model constructor it will very likely be removed in the future.
+   *
    * @param {Array.<ModelEvent>} events
-   * @returns {AggregateRoot}
+   * @returns {AggregateRoot|undefined}
    */
   aggregate (events) {
     ModelEventTypeList(events)
@@ -118,7 +122,7 @@ export class AggregateRepository {
   }
 
   /**
-   * Returns all entites
+   * Returns all entities
    *
    * NOTE: naively returns all entities by fetching them one by one by ID starting
    * from 1 to the current max id.
@@ -147,16 +151,37 @@ export class AggregateRepository {
    * @throws {EntryNotFoundError} if entity is not found
    */
   getById (id) {
+    AggregateIdType(id)
     return this.eventStore.fetch(id)
-      .then(this.aggregate.bind(this))
-      .then((aggregate) => {
-        if (!aggregate) {
-          throw new EntryNotFoundError(this.aggregateAlias + ' with id "' + id + '" not found.')
-        }
-        if (aggregate.isDeleted()) {
-          throw new EntryDeletedError(this.aggregateAlias + ' with id "' + id + '" is deleted.', aggregate)
-        }
-        return aggregate
-      })
+      .then(events => this.eventsToAggregate(id, events))
+  }
+
+  eventsToAggregate (id, events) {
+    AggregateIdType(id)
+    ModelEventTypeList(events)
+    const aggregate = this.aggregate(events)
+    if (!aggregate) {
+      throw new EntryNotFoundError(this.aggregateAlias + ' with id "' + id + '" not found.')
+    }
+    if (aggregate.isDeleted()) {
+      throw new EntryDeletedError(this.aggregateAlias + ' with id "' + id + '" is deleted.', aggregate)
+    }
+    return aggregate
+  }
+
+  /**
+   * Returns true if x is of type AggregateRepository
+   *
+   * @param {object} x
+   * @returns {boolean}
+   */
+  static is (x) {
+    return (
+      x instanceof AggregateRepository) || (
+        x && x.constructor && x.constructor.name === AggregateRepository.name &&
+        'aggregateRoot' in x && 'aggregateAlias' in x && 'aggregateAliasPrefix' in x && 'eventStore' in x && 'redis' in x
+      )
   }
 }
+
+export const AggregateRepositoryType = irreducible('AggregateRepositoryType', AggregateRepository.is)

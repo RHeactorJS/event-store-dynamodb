@@ -1,5 +1,5 @@
 import {AggregateRoot} from '../src/aggregate-root'
-import {UnhandledDomainEvent} from '@resourcefulhumans/rheactor-errors'
+import {UnhandledDomainEventError} from '@resourcefulhumans/rheactor-errors'
 
 export class DummyModel extends AggregateRoot {
   constructor (email) {
@@ -21,7 +21,7 @@ export class DummyModel extends AggregateRoot {
         this.deleted(event.createdAt)
         break
       default:
-        throw new UnhandledDomainEvent(event.name)
+        throw new UnhandledDomainEventError(event.name)
     }
   }
 }
