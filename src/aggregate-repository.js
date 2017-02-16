@@ -6,6 +6,9 @@ import {AggregateRoot, AggregateRootType} from './aggregate-root'
 import {MaybeStringType, AggregateIdType} from './types'
 import {irreducible} from 'tcomb'
 
+/**
+ * @deprecated Use ImmutableAggregateRepository
+ */
 export class AggregateRepository {
 
   /**

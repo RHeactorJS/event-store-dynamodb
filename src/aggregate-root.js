@@ -3,6 +3,9 @@ import {Date as DateType, irreducible} from 'tcomb'
 import {ModelEventType} from './model-event'
 import {UnhandledDomainEventError} from '@resourcefulhumans/rheactor-errors'
 
+/**
+ * @deprecated Use ImmutableAggregateRoot
+ */
 export class AggregateRoot {
   /**
    * Base class for aggregates

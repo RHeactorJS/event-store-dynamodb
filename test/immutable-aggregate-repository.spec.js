@@ -1,20 +1,43 @@
 /* global describe, it, before */
 
-import {AggregateRepository} from '../src/aggregate-repository'
+import {ImmutableAggregateRepository, ImmutableAggregateRoot, AggregateMeta, AggregateMetaType} from '../src'
 import {Promise} from 'bluebird'
 import helper from './helper'
 import {expect} from 'chai'
-import {DummyModel} from './dummy-model'
 import {ModelEvent} from '../src/model-event'
-import {EntryNotFoundError, EntryDeletedError} from '@resourcefulhumans/rheactor-errors'
+import {EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError} from '@resourcefulhumans/rheactor-errors'
 
-describe('AggregateRepository', function () {
+class DummyModel extends ImmutableAggregateRoot {
+  constructor (email, meta) {
+    AggregateMetaType(meta, ['DummyModel', 'meta:AggregateMeta'])
+    super(meta)
+    this.email = email
+  }
+
+  /**
+   * @param {ModelEvent} event
+   * @param {ImmutableAggregateRoot|undefined} aggregate
+   * @return {ImmutableAggregateRoot}
+   */
+  static applyEvent (event, aggregate) {
+    switch (event.name) {
+      case 'DummyCreatedEvent':
+        return new DummyModel(event.data.email, new AggregateMeta(event.aggregateId, 1, event.createdAt))
+      case 'DummyDeletedEvent':
+        return new DummyModel(aggregate.email, aggregate.meta.deleted(event.createdAt))
+      default:
+        throw new UnhandledDomainEventError(event.name)
+    }
+  }
+}
+
+describe('ImmutableAggregateRepository', function () {
   before(helper.clearDb)
 
   let repository
 
   before(() => {
-    repository = new AggregateRepository(
+    repository = new ImmutableAggregateRepository(
       DummyModel,
       'dummy',
       helper.redis
@@ -23,9 +46,7 @@ describe('AggregateRepository', function () {
 
   describe('.add()', () => {
     it('should add entities', () => {
-      const john = new DummyModel('john.doe@example.invalid')
-      const jane = new DummyModel('jane.doe@example.invalid')
-      return Promise.join(repository.add(john, 'someAuthor'), repository.add(jane))
+      return Promise.join(repository.add({email: 'john.doe@example.invalid'}, 'someAuthor'), repository.add({email: 'jane.doe@example.invalid'}))
         .spread((event1, event2) => {
           expect(event1).to.be.instanceOf(ModelEvent)
           expect(event1.name).to.equal('DummyCreatedEvent')
@@ -36,9 +57,9 @@ describe('AggregateRepository', function () {
             .join(repository.getById(event1.aggregateId), repository.getById(event2.aggregateId))
             .spread((u1, u2) => {
               expect(u1.email).to.equal('john.doe@example.invalid')
-              expect(u1.aggregateVersion()).to.equal(1)
+              expect(u1.meta.version).to.equal(1)
               expect(u2.email).to.equal('jane.doe@example.invalid')
-              expect(u2.aggregateVersion()).to.equal(1)
+              expect(u2.meta.version).to.equal(1)
             })
         })
     })
@@ -46,20 +67,22 @@ describe('AggregateRepository', function () {
 
   describe('.remove()', () => {
     it('should remove entities', () => {
-      const mike = new DummyModel('mike.doe@example.invalid')
-      return repository.add(mike)
+      return repository.add({email: 'mike.doe@example.invalid'})
         .then((createdEvent) => {
           return repository.getById(createdEvent.aggregateId)
         })
         .then((persistedMike) => {
-          expect(persistedMike.isDeleted()).to.equal(false)
+          expect(persistedMike.meta.isDeleted).to.equal(false)
           return repository
             .remove(persistedMike, 'someAuthor')
             .then((deletedEvent) => {
               expect(deletedEvent).to.be.instanceOf(ModelEvent)
               expect(deletedEvent.name).to.equal('DummyDeletedEvent')
               expect(deletedEvent.createdBy).to.equal('someAuthor')
-              expect(persistedMike.isDeleted()).to.equal(true)
+              return repository.getById(deletedEvent.aggregateId)
+                .catch(err => EntryDeletedError.is(err), err => {
+                  expect(err.entry.meta.isDeleted).to.equal(true)
+                })
             })
         })
     })
@@ -74,8 +97,7 @@ describe('AggregateRepository', function () {
         })
     )
     it('should return undefined if entity is deleted', () => {
-      const jim = new DummyModel('jim.doe@example.invalid')
-      repository.add(jim)
+      repository.add({email: 'jim.doe@example.invalid'})
         .then((createdEvent) => {
           return repository.getById(createdEvent.aggregateId)
         })
@@ -83,7 +105,7 @@ describe('AggregateRepository', function () {
           return repository
             .remove(persistedJim)
             .then(() => {
-              repository.findById(persistedJim.aggregateId())
+              repository.findById(persistedJim.meta.id)
                 .then((user) => {
                   expect(user).to.equal(undefined)
                 })
@@ -101,8 +123,7 @@ describe('AggregateRepository', function () {
         })
     )
     it('should throw an EntryDeletedError if entity is deleted', () => {
-      const jack = new DummyModel('jack.doe@example.invalid')
-      return repository.add(jack)
+      return repository.add({email: 'jack.doe@example.invalid'})
         .then((createdEvent) => {
           return repository.getById(createdEvent.aggregateId)
         })
@@ -111,13 +132,11 @@ describe('AggregateRepository', function () {
             .remove(persistedJack)
             .then(() => {
               Promise
-                .try(repository.getById.bind(repository, persistedJack.aggregateId()))
+                .try(repository.getById.bind(repository, persistedJack.meta.id))
                 .catch(err => EntryDeletedError.is(err), (err) => {
-                  expect(err.message).to.be.contain('dummy with id "' + persistedJack.aggregateId() + '" is deleted.')
-                  expect(err.entry).to.deep.equal(persistedJack)
-                })
-                .catch(err => {
-                  console.log(err)
+                  expect(err.message).to.be.contain('dummy with id "' + persistedJack.meta.id + '" is deleted.')
+                  expect(err.entry.meta.id).to.equal(persistedJack.meta.id)
+                  expect(err.entry.email).to.equal(persistedJack.email)
                 })
             })
         })
@@ -137,22 +156,22 @@ describe('AggregateRepository', function () {
   })
 
   describe('.is()', () => {
-    it('should return true, if AggregateRepository is passed', () => {
-      expect(AggregateRepository.is(new AggregateRepository({
+    it('should return true, if ImmutableAggregateRepository is passed', () => {
+      expect(ImmutableAggregateRepository.is(new ImmutableAggregateRepository({
         applyEvent: () => {
         }
       }, 'foo', {}))).to.equal(true)
     })
     it('should return true, if a similar object is passed', () => {
       const repo = {
-        constructor: {name: AggregateRepository.name},
-        aggregateRoot: '',
-        aggregateAlias: '',
-        aggregateAliasPrefix: '',
+        constructor: {name: ImmutableAggregateRepository.name},
+        root: '',
+        alias: '',
+        prefix: '',
         eventStore: {},
         redis: {}
       }
-      expect(AggregateRepository.is(repo)).to.equal(true)
+      expect(ImmutableAggregateRepository.is(repo)).to.equal(true)
     })
   })
 })

@@ -1,6 +1,7 @@
 import {Promise} from 'bluebird'
 import {ModelEvent, ModelEventType} from './model-event'
-import {AggregateIdType} from './types'
+import {AggregateIdType, PositiveIntegerType} from './types'
+import {String as StringType, Object as ObjectType} from 'tcomb'
 
 export class EventStore {
   /**
@@ -13,10 +14,13 @@ export class EventStore {
    * @param {redis.client} redis
    * @param {Number} numEvents
    */
-  constructor (aggregate, redis, numEvents) {
+  constructor (aggregate, redis, numEvents = 100) {
+    StringType(aggregate)
+    ObjectType(redis)
+    PositiveIntegerType(numEvents)
     this.aggregate = aggregate
     this.redis = redis
-    this.numEvents = numEvents || 100
+    this.numEvents = numEvents
   }
 
   /**

@@ -4,7 +4,7 @@
   "version": "0.0.0-development",
   "main": "dist/index.js",
   "scripts": {
-    "test": "NODE_ENV=testing mocha --compilers js:babel-register --reporter=dot --timeout=1350 test/\\*.js",
+    "test": "NODE_ENV=testing mocha --compilers js:babel-register --reporter=dot --timeout=100 test/\\*.js",
     "test:coverage": "NODE_ENV=nyc babel src --out-dir instrumented-src > /dev/null && nyc --reporter=text-summary --reporter=lcov npm run test",
     "test:coverage-travis": "npm run test:coverage && codeclimate-test-reporter < ./coverage/lcov.info && rm -rf ./coverage",
     "lint": "standard",
