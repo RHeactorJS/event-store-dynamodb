@@ -1,4 +1,4 @@
-import {AggregateIdType, AggregateVersionType} from './types'
+import {AggregateIdType, MaybeAggregateIdType, AggregateVersionType} from './types'
 import {Date as DateType, irreducible, maybe} from 'tcomb'
 const MaybeDateType = maybe(DateType)
 
@@ -9,18 +9,15 @@ export class AggregateMeta {
    * @param {Date} createdAt
    * @param {Date|undefined} updatedAt
    * @param {Date|undefined} deletedAt
+   * @param {Number} createdBy
    */
-  constructor (id, version, createdAt = new Date(), updatedAt = undefined, deletedAt = undefined) {
-    AggregateIdType(id, ['AggregateMeta', 'id:AggregateId'])
-    AggregateVersionType(version, ['AggregateMeta', 'version:AggregateVersion'])
-    DateType(createdAt, ['AggregateMeta', 'createdAt:Date'])
-    MaybeDateType(updatedAt, ['AggregateMeta', 'updatedAt:?Date'])
-    MaybeDateType(deletedAt, ['AggregateMeta', 'deletedAt:?Date'])
-    this._id = id
-    this._version = version
+  constructor (id, version, createdAt = new Date(), updatedAt, deletedAt, createdBy) {
+    this._id = AggregateIdType(id, ['AggregateMeta', 'id:AggregateId'])
+    this._version = AggregateVersionType(version, ['AggregateMeta', 'version:AggregateVersion'])
     this._createdAt = createdAt
-    this._updatedAt = updatedAt
-    this._deletedAt = deletedAt
+    this._updatedAt = MaybeDateType(updatedAt, ['AggregateMeta', 'updatedAt:?Date'])
+    this._deletedAt = MaybeDateType(deletedAt, ['AggregateMeta', 'deletedAt:?Date'])
+    this._createdBy = MaybeAggregateIdType(createdBy, ['AggregateMeta', 'createdBy:?AggregateId'])
   }
 
   /**
@@ -81,6 +78,13 @@ export class AggregateMeta {
       return this.updatedAt
     }
     return this.createdAt
+  }
+
+  /**
+   * @returns {Number|undefined}
+   */
+  get createdBy () {
+    return this._createdBy
   }
 
   /**

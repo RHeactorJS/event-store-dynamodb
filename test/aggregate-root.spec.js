@@ -86,6 +86,18 @@ describe('AggregateRoot', () => {
       expect(a.modifiedAt()).to.equal(updatedAt)
     })
   })
+  describe('.createdBy()', () => {
+    it('should return if of the creator', () => {
+      const a = new AggregateRoot()
+      a.persisted('42', undefined, '17')
+      expect(a.createdBy()).to.equal('17')
+    })
+    it('should default to undefined', () => {
+      const a = new AggregateRoot()
+      a.persisted('42')
+      expect(a.createdBy()).to.equal(undefined)
+    })
+  })
   describe('.is()', () => {
     it('should return true, if AggregateRoot is passed', () => {
       expect(AggregateRoot.is(new AggregateRoot())).to.equal(true)
@@ -102,7 +114,8 @@ describe('AggregateRoot', () => {
         createdAt: () => {},
         modifiedAt: () => {},
         updatedAt: () => {},
-        deletedAt: () => {}
+        deletedAt: () => {},
+        createdBy: () => {}
       }
       expect(AggregateRoot.is(root)).to.equal(true)
     })

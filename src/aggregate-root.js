@@ -1,4 +1,4 @@
-import {AggregateIdType} from './types'
+import {AggregateIdType, MaybeAggregateIdType} from './types'
 import {Date as DateType, irreducible} from 'tcomb'
 import {ModelEventType} from './model-event'
 import {UnhandledDomainEventError} from '@resourcefulhumans/rheactor-errors'
@@ -18,7 +18,8 @@ export class AggregateRoot {
         deleted: false,
         createdAt: null,
         updatedAt: null,
-        deletedAt: null
+        deletedAt: null,
+        createdBy: null
       }
     })
   }
@@ -26,13 +27,15 @@ export class AggregateRoot {
   /**
    * @param {String} aggregateId
    * @param {Date} createdAt
+   * @param {String|undefined} createdBy
    */
-  persisted (aggregateId, createdAt = new Date()) {
+  persisted (aggregateId, createdAt = new Date(), createdBy) {
     AggregateIdType(aggregateId)
     DateType(createdAt)
     this.$aggregateMeta.id = aggregateId
     this.$aggregateMeta.version = 1
     this.$aggregateMeta.createdAt = createdAt
+    this.$aggregateMeta.createdBy = MaybeAggregateIdType(createdBy, ['AggregateRoot', 'persisted()', 'createdBy:?AggregateId'])
   }
 
   /**
@@ -120,10 +123,19 @@ export class AggregateRoot {
   /**
    * Returns the timestamp when the aggregate was deleted
    *
-   * @returns {Number|null}
+   * @returns {Date|null}
    */
   deletedAt () {
     return this.$aggregateMeta.deletedAt
+  }
+
+  /**
+   * Returns the id of the creator
+   *
+   * @returns {String|undefined}
+   */
+  createdBy () {
+    return this.$aggregateMeta.createdBy
   }
 
   /**
@@ -158,7 +170,8 @@ export class AggregateRoot {
         'createdAt' in x &&
         'modifiedAt' in x &&
         'updatedAt' in x &&
-        'deletedAt' in x
+        'deletedAt' in x &&
+        'createdBy' in x
       )
   }
 }
