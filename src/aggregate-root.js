@@ -89,7 +89,7 @@ export class AggregateRoot {
   /**
    * Returns the timestamp when the aggregate was created
    *
-   * @returns {Number}
+   * @returns {Date}
    */
   createdAt () {
     return this.$aggregateMeta.createdAt
@@ -98,7 +98,7 @@ export class AggregateRoot {
   /**
    * Returns the timestamp when the aggregate was updated
    *
-   * @returns {Number|null}
+   * @returns {Date|null}
    */
   updatedAt () {
     return this.$aggregateMeta.updatedAt
@@ -108,7 +108,7 @@ export class AggregateRoot {
    * Returns the timestamp when the aggregate was modified the last time, which is the latest value of
    * createdAt, updatedAt or deletedAt
    *
-   * @returns {Number}
+   * @returns {Date}
    */
   modifiedAt () {
     if (this.$aggregateMeta.deletedAt) {
