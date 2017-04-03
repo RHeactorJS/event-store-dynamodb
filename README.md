@@ -12,3 +12,14 @@
 Implementation of an event store based on [redis](https://redis.io/).
 
 Contains [helper methods to manage secondary indices](https://github.com/ResourcefulHumans/rheactor-event-store/blob/master/src/aggregate-index.js).
+
+## Mutable Aggregates have been deprecated
+
+The initial implementation of the event store modified models in place. More recently we decied to use immutable models instead. 
+
+The [`ImmutableAggregateRepository`](https://github.com/ResourcefulHumans/rheactor-event-store/blob/master/src/immutable-aggregate-repository.js) changes how Models are instantiated. It moves the responsibility of creating the model instance to the repository, where the `applyEvent()` method is invoked as a reducer. The method will return an instance of [`ImmutableAggregateRoot`](https://github.com/ResourcefulHumans/rheactor-event-store/blob/master/src/immutable-aggregate-root.js) which can no longer be manipulated directly.
+
+This also changes how meta information is stored in the Aggregates, it is now encapsuled in a separate object called [`AggregateMeta`](https://github.com/ResourcefulHumans/rheactor-event-store/blob/master/src/aggregate-meta.js).
+
+See the [tests](https://github.com/ResourcefulHumans/rheactor-event-store/blob/master/test/immutable-aggregate-repository.spec.js) for details.
+
