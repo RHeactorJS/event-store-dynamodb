@@ -13,6 +13,26 @@ Implementation of an event store based on [redis](https://redis.io/).
 
 Contains [helper methods to manage secondary indices](https://github.com/ResourcefulHumans/rheactor-event-store/blob/master/src/aggregate-index.js).
 
+## Versioning
+
+Storing events per aggregate is done in a list per individual aggregate, the order of the insertion is guaranteed by using [Redis lists](https://redis.io/topics/data-types#lists). This gives use an version number per event for free.
+
+Lets assume we want to create a user `17`, we store a `UserCreatedEvent` for this aggregate id:
+
+```javascript
+eventStore.persist(new ModelEvent('UserCreatedEvent', '17', {name: 'John'}))
+```
+
+If we add another event later:
+
+```javascript
+eventStore.persist(new ModelEvent('UserNameUpdatedEvent', '17', {name: 'Mike'}))
+```
+
+this event will be appended to the list.
+
+When aggregating the events, we can increase the version of the aggregate per event.
+
 ## Mutable Aggregates have been deprecated
 
 The initial implementation of the event store modified models in place. More recently we decied to use immutable models instead. 
