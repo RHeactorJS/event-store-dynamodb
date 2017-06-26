@@ -53,5 +53,8 @@
     "src",
     "test",
     "README.md"
-  ]
+  ],
+  "engines": {
+    "node": ">=6.10.2"
+  }
 }
