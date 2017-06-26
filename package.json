@@ -1,5 +1,5 @@
 {
-  "name": "rheactor-event-store",
+  "name": "@rheactorjs/event-store",
   "description": "Implementation of an event store based on redis",
   "version": "0.0.0-development",
   "main": "dist/index.js",
@@ -12,21 +12,24 @@
     "precommit": "npm run lint && npm test",
     "commitmsg": "validate-commit-msg"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ResourcefulHumans/rheactor-event-store.git"
+    "url": "https://github.com/RHeactorJS/event-store.git"
   },
   "author": "Resourceful Humans GmbH <info@resourceful-humans.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ResourcefulHumans/rheactor-event-store/issues"
+    "url": "https://github.com/RHeactorJS/event-store/issues"
   },
-  "homepage": "https://github.com/ResourcefulHumans/rheactor-event-store#readme",
+  "homepage": "https://github.com/RHeactorJS/event-store#readme",
   "dependencies": {
     "redis": "^2.6.5"
   },
   "peerDependencies": {
-    "@resourcefulhumans/rheactor-errors": "1.x",
+    "@rheactorjs/errors": "1.x",
     "bluebird": "^3.4.7",
     "tcomb": "^3.2.16"
   },

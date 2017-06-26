@@ -1,7 +1,7 @@
 import {AggregateIdType, MaybeAggregateIdType} from './types'
 import {Date as DateType, irreducible} from 'tcomb'
 import {ModelEventType} from './model-event'
-import {UnhandledDomainEventError} from '@resourcefulhumans/rheactor-errors'
+import {UnhandledDomainEventError} from '@rheactorjs/errors'
 
 /**
  * @deprecated Use ImmutableAggregateRoot

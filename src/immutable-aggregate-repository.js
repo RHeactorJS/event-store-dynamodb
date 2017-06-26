@@ -1,6 +1,6 @@
 import {EventStore} from './event-store'
 import {ModelEvent, ModelEventType} from './model-event'
-import {EntryNotFoundError, EntryDeletedError} from '@resourcefulhumans/rheactor-errors'
+import {EntryNotFoundError, EntryDeletedError} from '@rheactorjs/errors'
 import {Promise} from 'bluebird'
 import {ImmutableAggregateRootType} from './immutable-aggregate-root'
 import {MaybeStringType, AggregateIdType} from './types'

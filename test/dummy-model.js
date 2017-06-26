@@ -1,5 +1,5 @@
 import {AggregateRoot} from '../src/aggregate-root'
-import {UnhandledDomainEventError} from '@resourcefulhumans/rheactor-errors'
+import {UnhandledDomainEventError} from '@rheactorjs/errors'
 
 export class DummyModel extends AggregateRoot {
   constructor (email) {

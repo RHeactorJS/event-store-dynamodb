@@ -5,7 +5,7 @@ import {Promise} from 'bluebird'
 import helper from './helper'
 import {expect} from 'chai'
 import {ModelEvent} from '../src/model-event'
-import {EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError} from '@resourcefulhumans/rheactor-errors'
+import {EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError} from '@rheactorjs/errors'
 
 class DummyModel extends ImmutableAggregateRoot {
   constructor (email, meta) {
