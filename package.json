@@ -26,9 +26,6 @@
   },
   "homepage": "https://github.com/RHeactorJS/event-store#readme",
   "dependencies": {
-    "redis": "^2.6.5"
-  },
-  "dependencies": {
     "@rheactorjs/errors": "1.x",
     "bluebird": "^3.4.7",
     "tcomb": "^3.2.16"
@@ -44,6 +41,7 @@
     "mocha": "^3.2.0",
     "mocha-lcov-reporter": "^1.2.0",
     "nyc": "^10.1.2",
+    "redis": "^2.7.1",
     "semantic-release": "^6.3.2",
     "standard": "^10.0.1",
     "validate-commit-msg": "^2.11.1"
