@@ -80,7 +80,7 @@ describe('ImmutableAggregateRepository', function () {
               expect(deletedEvent.name).to.equal('DummyDeletedEvent')
               expect(deletedEvent.createdBy).to.equal('someAuthor')
               return repository.getById(deletedEvent.aggregateId)
-                .catch(err => EntryDeletedError.is(err), err => {
+                .catch(EntryDeletedError, err => {
                   expect(err.entry.meta.isDeleted).to.equal(true)
                 })
             })
@@ -118,7 +118,7 @@ describe('ImmutableAggregateRepository', function () {
     it(
       'should throw an EntryNotFoundError if entity not found',
       () => Promise.try(repository.getById.bind(repository, '9999999'))
-        .catch(err => EntryNotFoundError.is(err), (err) => {
+        .catch(EntryNotFoundError, err => {
           expect(err.message).to.be.contain('dummy with id "9999999" not found.')
         })
     )
@@ -133,7 +133,7 @@ describe('ImmutableAggregateRepository', function () {
             .then(() => {
               Promise
                 .try(repository.getById.bind(repository, persistedJack.meta.id))
-                .catch(err => EntryDeletedError.is(err), (err) => {
+                .catch(EntryDeletedError, err => {
                   expect(err.message).to.be.contain('dummy with id "' + persistedJack.meta.id + '" is deleted.')
                   expect(err.entry.meta.id).to.equal(persistedJack.meta.id)
                   expect(err.entry.email).to.equal(persistedJack.email)
@@ -153,25 +153,5 @@ describe('ImmutableAggregateRepository', function () {
           expect(entities[1].email).to.equal('jane.doe@example.invalid')
         })
     )
-  })
-
-  describe('.is()', () => {
-    it('should return true, if ImmutableAggregateRepository is passed', () => {
-      expect(ImmutableAggregateRepository.is(new ImmutableAggregateRepository({
-        applyEvent: () => {
-        }
-      }, 'foo', {}))).to.equal(true)
-    })
-    it('should return true, if a similar object is passed', () => {
-      const repo = {
-        constructor: {name: ImmutableAggregateRepository.name},
-        root: '',
-        alias: '',
-        prefix: '',
-        eventStore: {},
-        redis: {}
-      }
-      expect(ImmutableAggregateRepository.is(repo)).to.equal(true)
-    })
   })
 })

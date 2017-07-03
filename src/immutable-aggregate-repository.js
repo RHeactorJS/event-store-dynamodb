@@ -124,20 +124,6 @@ export class ImmutableAggregateRepository {
         return aggregate
       })
   }
-
-  /**
-   * Returns true if x is of type ImmutableAggregateRepository
-   *
-   * @param {object} x
-   * @returns {boolean}
-   */
-  static is (x) {
-    return (
-      x instanceof ImmutableAggregateRepository) || (
-        x && x.constructor && x.constructor.name === ImmutableAggregateRepository.name &&
-        'root' in x && 'alias' in x && 'prefix' in x && 'eventStore' in x && 'redis' in x
-      )
-  }
 }
 
-export const ImmutableAggregateRepositoryType = irreducible('ImmutableAggregateRepositoryType', ImmutableAggregateRepository.is)
+export const ImmutableAggregateRepositoryType = irreducible('ImmutableAggregateRepositoryType', x => x instanceof ImmutableAggregateRepository)

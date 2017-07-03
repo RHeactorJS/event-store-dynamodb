@@ -115,7 +115,7 @@ export class AggregateIndex {
    */
   find (type, value) {
     return this.get(type, value)
-      .catch(err => EntryNotFoundError.is(err), () => {
+      .catch(EntryNotFoundError, () => {
         return null
       })
   }

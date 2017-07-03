@@ -108,16 +108,6 @@ export class AggregateMeta {
     DateType(deletedAt)
     return new AggregateMeta(this.id, this.version + 1, this.createdAt, this.updatedAt, deletedAt)
   }
-
-  /**
-   * Returns true if x is of type AggregateMeta
-   *
-   * @param {object} x
-   * @returns {boolean}
-   */
-  static is (x) {
-    return (x instanceof AggregateMeta) || (x && x.constructor && x.constructor.name === AggregateMeta.name && 'id' in x && 'version' in x && 'data' in x && 'createdAt' in x && 'updatedAt' in x && 'deletedAt' in x)
-  }
 }
 
-export const AggregateMetaType = irreducible('AggregateMetaType', AggregateMeta.is)
+export const AggregateMetaType = irreducible('AggregateMetaType', x => x instanceof AggregateMeta)

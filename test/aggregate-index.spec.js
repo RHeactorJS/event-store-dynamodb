@@ -61,7 +61,7 @@ describe('AggregateIndex', () => {
           aggregateIndex.addIfNotPresent('email', 'jill.doe@example.invalid', '17'),
           aggregateIndex.addIfNotPresent('email', 'jill.doe@example.invalid', '18')
         )
-        .catch(err => EntryAlreadyExistsError.is(err), (err) => {
+        .catch(EntryAlreadyExistsError, err => {
           expect(err.message).to.be.contain('jill.doe@example.invalid')
         })
     )
@@ -75,7 +75,7 @@ describe('AggregateIndex', () => {
     it(
       'should not add the value to the list if it is present',
       () => aggregateIndex.addToListIfNotPresent('meeting-users:42', '17')
-        .catch(err => EntryAlreadyExistsError.is(err), (err) => {
+        .catch(EntryAlreadyExistsError, err => {
           expect(err.message).to.equal('Aggregate "17" already member of "user.meeting-users:42.list".')
         })
     )

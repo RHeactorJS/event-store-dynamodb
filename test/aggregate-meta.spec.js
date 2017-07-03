@@ -99,21 +99,4 @@ describe('AggregateMeta', () => {
       expect(a.createdBy).to.equal(undefined)
     })
   })
-  describe('.is()', () => {
-    it('should return true, if ImmutableAggregateRoot is passed', () => {
-      expect(AggregateMeta.is(new AggregateMeta('17', 1))).to.equal(true)
-    })
-    it('should return true, if a similar object is passed', () => {
-      const meta = {
-        constructor: {name: AggregateMeta.name},
-        id: null,
-        version: null,
-        data: null,
-        createdAt: null,
-        updatedAt: null,
-        deletedAt: null
-      }
-      expect(AggregateMeta.is(meta)).to.equal(true)
-    })
-  })
 })
