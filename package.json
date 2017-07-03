@@ -28,7 +28,7 @@
   "dependencies": {
     "redis": "^2.6.5"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@rheactorjs/errors": "1.x",
     "bluebird": "^3.4.7",
     "tcomb": "^3.2.16"
