@@ -1,11 +1,10 @@
-import {AggregateRepositoryType} from './aggregate-repository'
+import {ImmutableAggregateRepositoryType} from './immutable-aggregate-repository'
 import {AggregateIdType} from './types'
 import {Date as DateType} from 'tcomb'
 
 export class SnapshotAggregateRepository {
   constructor (repo) {
-    AggregateRepositoryType(repo)
-    this.repo = repo
+    this.repo = ImmutableAggregateRepositoryType(repo, ['SnapshotAggregateRepository()', 'repo:ImmutableAggregateRepository'])
   }
 
   /**
@@ -20,7 +19,7 @@ export class SnapshotAggregateRepository {
         DateType(until)
         return this.repo.eventStore.fetch(id)
           .filter(event => event.createdAt <= until)
-          .then(events => this.repo.eventsToAggregate(id, events))
+          .reduce((aggregate, event) => this.repo.applyEvent(event, aggregate === false ? undefined : aggregate), false)
       }
     }
   }

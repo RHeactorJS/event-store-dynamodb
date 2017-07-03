@@ -2,16 +2,26 @@
 
 import {EventStore} from '../src/event-store'
 import {ModelEvent} from '../src/model-event'
-import {AggregateRepository} from '../src/aggregate-repository'
+import {ImmutableAggregateRepository} from '../src/immutable-aggregate-repository'
 import {SnapshotAggregateRepository} from '../src/snapshot-aggregate-repository'
 import {Promise} from 'bluebird'
 import helper from './helper'
 import {expect} from 'chai'
-import {AggregateRoot} from '../src/aggregate-root'
+import {ImmutableAggregateRoot} from '../src/immutable-aggregate-root'
+import {AggregateMeta} from '../src/aggregate-meta'
 
-class DummyModel extends AggregateRoot {
-  applyEvent (event) {
-    this.updated(event.createdAt)
+class DummyModel extends ImmutableAggregateRoot {
+  /**
+   * Applies the event
+   *
+   * @param {ModelEvent} event
+   * @param {DummyModel|undefined} dummy
+   * @return {DummyModel}
+   */
+  static applyEvent (event, dummy) {
+    const {createdAt, aggregateId} = event
+    if (!dummy) return new DummyModel(new AggregateMeta(aggregateId, 1, createdAt))
+    return new DummyModel(dummy.meta.updated(createdAt))
   }
 }
 
@@ -22,7 +32,7 @@ describe('SnapshotAggregateRepository', () => {
   let eventStore
 
   before(() => {
-    snapshotRepo = new SnapshotAggregateRepository(new AggregateRepository(
+    snapshotRepo = new SnapshotAggregateRepository(new ImmutableAggregateRepository(
       DummyModel,
       'user',
       helper.redis
@@ -41,8 +51,8 @@ describe('SnapshotAggregateRepository', () => {
         )
         .then(() => snapshotRepo.getById('17').until(new Date('2016-01-02T05:00:00+00:00')))
         .then(aggregate => {
-          expect(aggregate.aggregateVersion()).to.equal(2)
-          expect(aggregate.modifiedAt().getTime()).to.equal(d.getTime())
+          expect(aggregate.meta.version).to.equal(2)
+          expect(aggregate.meta.modifiedAt.getTime()).to.equal(d.getTime())
         })
     })
   })
