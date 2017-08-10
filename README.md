@@ -1,5 +1,7 @@
 # event-store
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/RHeactorJS/event-store.svg)](https://greenkeeper.io/)
+
 [![npm version](https://img.shields.io/npm/v/@rheactorjs/event-store.svg)](https://www.npmjs.com/package/@rheactorjs/event-store)
 [![Build Status](https://travis-ci.org/RHeactorJS/event-store.svg?branch=master)](https://travis-ci.org/RHeactorJS/event-store)
 [![monitored by greenkeeper.io](https://img.shields.io/badge/greenkeeper.io-monitored-brightgreen.svg)](http://greenkeeper.io/) 
