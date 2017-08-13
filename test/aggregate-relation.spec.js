@@ -1,11 +1,11 @@
 /* global describe, it, before */
 
-import {AggregateRelation} from '../src/aggregate-relation'
-import {ImmutableAggregateRepository} from '../src/immutable-aggregate-repository'
-import {Promise} from 'bluebird'
+import { AggregateRelation } from '../src/aggregate-relation'
+import { ImmutableAggregateRepository } from '../src/immutable-aggregate-repository'
+import { Promise } from 'bluebird'
 import helper from './helper'
-import {expect} from 'chai'
-import {DummyModel} from './dummy-model'
+import { expect } from 'chai'
+import { DummyModel } from './dummy-model'
 
 describe('AggregateRelation', function () {
   before(helper.clearDb)
@@ -55,4 +55,16 @@ describe('AggregateRelation', function () {
         })
     })
   )
+
+  it('should honor repository alias', (done) => {
+    const relation = new AggregateRelation({alias: 'foo'})
+    relation.redis = {
+      saddAsync: (key, id) => {
+        expect(key).to.equal('foo:acme:42')
+        expect(id).to.equal('17')
+        done()
+      }
+    }
+    relation.addRelatedId('acme', '42', '17')
+  })
 })

@@ -23,11 +23,10 @@ export class AggregateRelation {
    * @returns {Promise.<Array.<AggregateRoot>>}
    */
   findByRelatedId (relation, relatedId) {
-    StringType(relation)
-    AggregateIdType(relatedId)
-    let self = this
-    return self.redis.smembersAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId)
-      .map(self.repository.findById.bind(self.repository))
+    StringType(relation, ['AggregateRelation.findByRelatedId()', 'relation:String'])
+    AggregateIdType(relatedId, ['AggregateRelation.findByRelatedId()', 'relatedId:AggregateId'])
+    return this.redis.smembersAsync(this.repository.alias + ':' + relation + ':' + relatedId)
+      .map(id => this.repository.findById(id))
       .filter((model) => {
         return model !== undefined
       })
@@ -45,11 +44,10 @@ export class AggregateRelation {
    * @returns {Promise}
    */
   addRelatedId (relation, relatedId, aggregateId) {
-    StringType(relation)
-    AggregateIdType(relatedId)
-    AggregateIdType(aggregateId)
-    let self = this
-    return self.redis.saddAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId, aggregateId)
+    StringType(relation, ['AggregateRelation.addRelatedId()', 'relation:String'])
+    AggregateIdType(relatedId, ['AggregateRelation.addRelatedId()', 'relatedId:AggregateId'])
+    AggregateIdType(aggregateId, ['AggregateRelation.addRelatedId()', 'aggregateId:AggregateId'])
+    return this.redis.saddAsync(this.repository.alias + ':' + relation + ':' + relatedId, aggregateId)
   }
 
   /**
@@ -61,10 +59,9 @@ export class AggregateRelation {
    * @returns {Promise}
    */
   removeRelatedId (relation, relatedId, aggregateId) {
-    StringType(relation)
-    AggregateIdType(relatedId)
-    AggregateIdType(aggregateId)
-    let self = this
-    return self.redis.sremAsync(self.repository.aggregateAlias + ':' + relation + ':' + relatedId, aggregateId)
+    StringType(relation, ['AggregateRelation.removeRelatedId()', 'relation:String'])
+    AggregateIdType(relatedId, ['AggregateRelation.removeRelatedId()', 'relatedId:AggregateId'])
+    AggregateIdType(aggregateId, ['AggregateRelation.removeRelatedId()', 'aggregateId:AggregateId'])
+    return this.redis.sremAsync(this.repository.alias + ':' + relation + ':' + relatedId, aggregateId)
   }
 }
