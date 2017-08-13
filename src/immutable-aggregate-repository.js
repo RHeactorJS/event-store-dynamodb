@@ -2,7 +2,6 @@ import {EventStore} from './event-store'
 import {ModelEvent, ModelEventType} from './model-event'
 import {EntryNotFoundError, EntryDeletedError} from '@rheactorjs/errors'
 import {Promise} from 'bluebird'
-import {ImmutableAggregateRootType} from './immutable-aggregate-root'
 import {MaybeStringType, AggregateIdType} from './types'
 import {irreducible, String as StringType, Function as FunctionType, Object as ObjectType} from 'tcomb'
 
@@ -55,14 +54,14 @@ export class ImmutableAggregateRepository {
   /**
    * Generic method for removing aggregates from the collection
    *
-   * @param {AggregateRoot} aggregate
+   * @param {Number} id
    * @param {String} createdBy
    * @returns {Promise.<ModelEvent>}
    */
-  remove (aggregate, createdBy) {
-    ImmutableAggregateRootType(aggregate, ['ImmutableAggregateRepository', 'remove()', 'aggregate:ImmutableAggregateRoot'])
+  remove (id, createdBy) {
+    AggregateIdType(id, ['ImmutableAggregateRepository', 'remove()', 'id:AggregateId'])
     MaybeStringType(createdBy, ['ImmutableAggregateRepository', 'remove()', 'createdBy:?String'])
-    return this.persistEvent(new ModelEvent(aggregate.meta.id, this.prefix + 'DeletedEvent', aggregate, new Date(), createdBy))
+    return this.persistEvent(new ModelEvent(id, this.prefix + 'DeletedEvent', {}, new Date(), createdBy))
   }
 
   /**

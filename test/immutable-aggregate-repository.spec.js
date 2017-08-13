@@ -74,7 +74,7 @@ describe('ImmutableAggregateRepository', function () {
         .then((persistedMike) => {
           expect(persistedMike.meta.isDeleted).to.equal(false)
           return repository
-            .remove(persistedMike, 'someAuthor')
+            .remove(persistedMike.meta.id, 'someAuthor')
             .then((deletedEvent) => {
               expect(deletedEvent).to.be.instanceOf(ModelEvent)
               expect(deletedEvent.name).to.equal('DummyDeletedEvent')
@@ -103,7 +103,7 @@ describe('ImmutableAggregateRepository', function () {
         })
         .then((persistedJim) => {
           return repository
-            .remove(persistedJim)
+            .remove(persistedJim.meta.id)
             .then(() => {
               repository.findById(persistedJim.meta.id)
                 .then((user) => {
@@ -129,7 +129,7 @@ describe('ImmutableAggregateRepository', function () {
         })
         .then((persistedJack) => {
           return repository
-            .remove(persistedJack)
+            .remove(persistedJack.meta.id)
             .then(() => {
               Promise
                 .try(repository.getById.bind(repository, persistedJack.meta.id))
