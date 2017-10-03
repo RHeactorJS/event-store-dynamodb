@@ -4,13 +4,13 @@
   "version": "0.0.0-development",
   "main": "dist/index.js",
   "scripts": {
-    "test": "NODE_ENV=testing mocha --compilers js:babel-register --reporter=dot --timeout=100 test/\\*.js",
-    "test:coverage": "NODE_ENV=nyc babel src --out-dir instrumented-src > /dev/null && nyc --reporter=text-summary --reporter=lcov npm run test",
+    "test": "jest --forceExit",
+    "test:coverage": "jest --forceExit --coverage",
     "test:coverage-travis": "npm run test:coverage && codeclimate-test-reporter < ./coverage/lcov.info && rm -rf ./coverage",
     "lint": "standard",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "precommit": "npm run lint && npm test",
-    "commitmsg": "validate-commit-msg"
+    "commitmsg": "commitlint -e"
   },
   "publishConfig": {
     "access": "public"
@@ -31,20 +31,18 @@
     "tcomb": "^3.2.16"
   },
   "devDependencies": {
+    "@commitlint/cli": "^3.2.0",
+    "@commitlint/config-angular": "^3.1.1",
     "babel-cli": "^6.22.2",
     "babel-preset-env": "^1.3.2",
     "babel-preset-es2015": "^6.22.0",
     "babel-register": "^6.22.0",
-    "chai": "^4.1.1",
     "codeclimate-test-reporter": "^0.5.0",
     "husky": "^0.14.3",
-    "mocha": "^3.2.0",
-    "mocha-lcov-reporter": "^1.2.0",
-    "nyc": "^11.1.0",
+    "jest": "^21.2.1",
     "redis": "^2.7.1",
     "semantic-release": "^8.0.0",
-    "standard": "^10.0.1",
-    "validate-commit-msg": "^2.11.1"
+    "standard": "^10.0.1"
   },
   "files": [
     "dist",

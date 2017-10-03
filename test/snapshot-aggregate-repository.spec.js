@@ -1,14 +1,14 @@
-/* global describe, it, before */
+/* global describe it beforeAll expect */
 
-import {EventStore} from '../src/event-store'
-import {ModelEvent} from '../src/model-event'
-import {ImmutableAggregateRepository} from '../src/immutable-aggregate-repository'
-import {SnapshotAggregateRepository} from '../src/snapshot-aggregate-repository'
-import {Promise} from 'bluebird'
+import { EventStore } from '../src/event-store'
+import { ModelEvent } from '../src/model-event'
+import { ImmutableAggregateRepository } from '../src/immutable-aggregate-repository'
+import { SnapshotAggregateRepository } from '../src/snapshot-aggregate-repository'
+import { Promise } from 'bluebird'
 import helper from './helper'
-import {expect} from 'chai'
-import {ImmutableAggregateRoot} from '../src/immutable-aggregate-root'
-import {AggregateMeta} from '../src/aggregate-meta'
+
+import { ImmutableAggregateRoot } from '../src/immutable-aggregate-root'
+import { AggregateMeta } from '../src/aggregate-meta'
 
 class DummyModel extends ImmutableAggregateRoot {
   /**
@@ -26,19 +26,20 @@ class DummyModel extends ImmutableAggregateRoot {
 }
 
 describe('SnapshotAggregateRepository', () => {
-  before(helper.clearDb)
+  beforeAll(helper.clearDb)
 
   let snapshotRepo
   let eventStore
 
-  before(() => {
-    snapshotRepo = new SnapshotAggregateRepository(new ImmutableAggregateRepository(
-      DummyModel,
-      'user',
-      helper.redis
-    ))
-    eventStore = new EventStore('user', helper.redis, 1)
-  })
+  beforeAll(() => helper.redis()
+    .then(client => {
+      snapshotRepo = new SnapshotAggregateRepository(new ImmutableAggregateRepository(
+        DummyModel,
+        'user',
+        client
+      ))
+      eventStore = new EventStore('user', client, 1)
+    }))
 
   describe('getById().until()', () => {
     it('should aggregate only to a given date', () => {
@@ -51,8 +52,8 @@ describe('SnapshotAggregateRepository', () => {
         )
         .then(() => snapshotRepo.getById('17').until(new Date('2016-01-02T05:00:00+00:00')))
         .then(aggregate => {
-          expect(aggregate.meta.version).to.equal(2)
-          expect(aggregate.meta.modifiedAt.getTime()).to.equal(d.getTime())
+          expect(aggregate.meta.version).toEqual(2)
+          expect(aggregate.meta.modifiedAt.getTime()).toEqual(d.getTime())
         })
     })
   })

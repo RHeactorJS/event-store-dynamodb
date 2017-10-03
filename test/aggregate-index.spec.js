@@ -1,19 +1,20 @@
-/* global describe, it, before */
+/* global describe it beforeAll afterAll expect */
 
-import {AggregateIndex} from '../src/aggregate-index'
-import {Promise} from 'bluebird'
+import { AggregateIndex } from '../src/aggregate-index'
+import { Promise } from 'bluebird'
 import helper from './helper'
-import {expect} from 'chai'
-import {EntryAlreadyExistsError} from '@rheactorjs/errors'
+
+import { EntryAlreadyExistsError } from '@rheactorjs/errors'
 
 describe('AggregateIndex', () => {
-  before(helper.clearDb)
+  beforeAll(helper.clearDb)
+  afterAll(helper.close)
 
   let aggregateIndex
 
-  before(() => {
-    aggregateIndex = new AggregateIndex('user', helper.redis)
-  })
+  beforeAll(() => helper.redis().then(client => {
+    aggregateIndex = new AggregateIndex('user', client)
+  }))
 
   describe('.add()', () => {
     it(
@@ -25,7 +26,7 @@ describe('AggregateIndex', () => {
         )
         .then(() => aggregateIndex.find('email', 'jane.doe@example.invalid'))
         .then(res => {
-          expect(res).to.equal('18')
+          expect(res).toEqual('18')
         })
     )
   })
@@ -36,7 +37,7 @@ describe('AggregateIndex', () => {
       () => aggregateIndex
         .getAll('email')
         .then(res => {
-          expect(res).to.deep.equal(['17', '18'])
+          expect(res).toEqual(['17', '18'])
         })
     )
   })
@@ -48,7 +49,7 @@ describe('AggregateIndex', () => {
         .then(() => aggregateIndex.remove('some-type', 'some-value', 'some-aggregateId'))
         .then(() => aggregateIndex.find('some-type', 'some-value'))
         .then(res => {
-          expect(res).to.equal(null)
+          expect(res).toEqual(null)
         })
     )
   })
@@ -62,7 +63,7 @@ describe('AggregateIndex', () => {
           aggregateIndex.addIfNotPresent('email', 'jill.doe@example.invalid', '18')
         )
         .catch(EntryAlreadyExistsError, err => {
-          expect(err.message).to.be.contain('jill.doe@example.invalid')
+          expect(err.message).toContain('jill.doe@example.invalid')
         })
     )
   })
@@ -76,7 +77,7 @@ describe('AggregateIndex', () => {
       'should not add the value to the list if it is present',
       () => aggregateIndex.addToListIfNotPresent('meeting-users:42', '17')
         .catch(EntryAlreadyExistsError, err => {
-          expect(err.message).to.equal('Aggregate "17" already member of "user.meeting-users:42.list".')
+          expect(err.message).toEqual('Aggregate "17" already member of "user.meeting-users:42.list".')
         })
     )
   })
@@ -91,8 +92,8 @@ describe('AggregateIndex', () => {
         )
         .then(() => aggregateIndex.getList('meeting-users:256'))
         .spread((id1, id2) => {
-          expect(id1).to.equal('19')
-          expect(id2).to.equal('20')
+          expect(id1).toEqual('19')
+          expect(id2).toEqual('20')
         })
     )
   })
@@ -102,11 +103,11 @@ describe('AggregateIndex', () => {
       'should add a value to the list if it is not present',
       () => aggregateIndex.addToListIfNotPresent('meeting-users:127', '18')
         .then(() => aggregateIndex.getList('meeting-users:127'))
-        .spread((id) => expect(id).to.equal('18'))
+        .spread((id) => expect(id).toEqual('18'))
         .then(() => aggregateIndex.removeFromList('meeting-users:127', '18'))
         .then(() => aggregateIndex.getList('meeting-users:127'))
         .then(members => {
-          expect(members).to.deep.equal([])
+          expect(members).toEqual([])
         })
     )
   })

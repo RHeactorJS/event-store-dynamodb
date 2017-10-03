@@ -1,11 +1,11 @@
-/* global describe, it, before */
+/* global describe it beforeAll expect */
 
-import {ImmutableAggregateRepository, ImmutableAggregateRoot, AggregateMeta, AggregateMetaType} from '../src'
-import {Promise} from 'bluebird'
+import { ImmutableAggregateRepository, ImmutableAggregateRoot, AggregateMeta, AggregateMetaType } from '../src'
+import { Promise } from 'bluebird'
 import helper from './helper'
-import {expect} from 'chai'
-import {ModelEvent} from '../src/model-event'
-import {EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError} from '@rheactorjs/errors'
+
+import { ModelEvent } from '../src/model-event'
+import { EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError } from '@rheactorjs/errors'
 
 class DummyModel extends ImmutableAggregateRoot {
   constructor (email, meta) {
@@ -32,34 +32,35 @@ class DummyModel extends ImmutableAggregateRoot {
 }
 
 describe('ImmutableAggregateRepository', function () {
-  before(helper.clearDb)
+  beforeAll(helper.clearDb)
 
   let repository
 
-  before(() => {
-    repository = new ImmutableAggregateRepository(
-      DummyModel,
-      'dummy',
-      helper.redis
-    )
-  })
+  beforeAll(() => helper.redis()
+    .then(client => {
+      repository = new ImmutableAggregateRepository(
+        DummyModel,
+        'dummy',
+        client
+      )
+    }))
 
   describe('.add()', () => {
     it('should add entities', () => {
       return Promise.join(repository.add({email: 'john.doe@example.invalid'}, 'someAuthor'), repository.add({email: 'jane.doe@example.invalid'}))
         .spread((event1, event2) => {
-          expect(event1).to.be.instanceOf(ModelEvent)
-          expect(event1.name).to.equal('DummyCreatedEvent')
-          expect(event1.createdBy).to.equal('someAuthor')
-          expect(event2).to.be.instanceOf(ModelEvent)
-          expect(event2.createdBy).to.equal(undefined)
+          expect(event1).toBeInstanceOf(ModelEvent)
+          expect(event1.name).toEqual('DummyCreatedEvent')
+          expect(event1.createdBy).toEqual('someAuthor')
+          expect(event2).toBeInstanceOf(ModelEvent)
+          expect(event2.createdBy).toEqual(undefined)
           return Promise
             .join(repository.getById(event1.aggregateId), repository.getById(event2.aggregateId))
             .spread((u1, u2) => {
-              expect(u1.email).to.equal('john.doe@example.invalid')
-              expect(u1.meta.version).to.equal(1)
-              expect(u2.email).to.equal('jane.doe@example.invalid')
-              expect(u2.meta.version).to.equal(1)
+              expect(u1.email).toEqual('john.doe@example.invalid')
+              expect(u1.meta.version).toEqual(1)
+              expect(u2.email).toEqual('jane.doe@example.invalid')
+              expect(u2.meta.version).toEqual(1)
             })
         })
     })
@@ -72,16 +73,16 @@ describe('ImmutableAggregateRepository', function () {
           return repository.getById(createdEvent.aggregateId)
         })
         .then((persistedMike) => {
-          expect(persistedMike.meta.isDeleted).to.equal(false)
+          expect(persistedMike.meta.isDeleted).toEqual(false)
           return repository
             .remove(persistedMike.meta.id, 'someAuthor')
             .then((deletedEvent) => {
-              expect(deletedEvent).to.be.instanceOf(ModelEvent)
-              expect(deletedEvent.name).to.equal('DummyDeletedEvent')
-              expect(deletedEvent.createdBy).to.equal('someAuthor')
+              expect(deletedEvent).toBeInstanceOf(ModelEvent)
+              expect(deletedEvent.name).toEqual('DummyDeletedEvent')
+              expect(deletedEvent.createdBy).toEqual('someAuthor')
               return repository.getById(deletedEvent.aggregateId)
                 .catch(EntryDeletedError, err => {
-                  expect(err.entry.meta.isDeleted).to.equal(true)
+                  expect(err.entry.meta.isDeleted).toEqual(true)
                 })
             })
         })
@@ -93,7 +94,7 @@ describe('ImmutableAggregateRepository', function () {
       'should return undefined if entity not found',
       () => repository.findById('9999999')
         .then((user) => {
-          expect(user).to.equal(undefined)
+          expect(user).toEqual(undefined)
         })
     )
     it('should return undefined if entity is deleted', () => {
@@ -107,7 +108,7 @@ describe('ImmutableAggregateRepository', function () {
             .then(() => {
               repository.findById(persistedJim.meta.id)
                 .then((user) => {
-                  expect(user).to.equal(undefined)
+                  expect(user).toEqual(undefined)
                 })
             })
         })
@@ -119,7 +120,7 @@ describe('ImmutableAggregateRepository', function () {
       'should throw an EntryNotFoundError if entity not found',
       () => Promise.try(repository.getById.bind(repository, '9999999'))
         .catch(EntryNotFoundError, err => {
-          expect(err.message).to.be.contain('dummy with id "9999999" not found.')
+          expect(err.message).toContain('dummy with id "9999999" not found.')
         })
     )
     it('should throw an EntryDeletedError if entity is deleted', () => {
@@ -134,9 +135,9 @@ describe('ImmutableAggregateRepository', function () {
               Promise
                 .try(repository.getById.bind(repository, persistedJack.meta.id))
                 .catch(EntryDeletedError, err => {
-                  expect(err.message).to.be.contain('dummy with id "' + persistedJack.meta.id + '" is deleted.')
-                  expect(err.entry.meta.id).to.equal(persistedJack.meta.id)
-                  expect(err.entry.email).to.equal(persistedJack.email)
+                  expect(err.message).toContain('dummy with id "' + persistedJack.meta.id + '" is deleted.')
+                  expect(err.entry.meta.id).toEqual(persistedJack.meta.id)
+                  expect(err.entry.email).toEqual(persistedJack.email)
                 })
             })
         })
@@ -148,9 +149,9 @@ describe('ImmutableAggregateRepository', function () {
       'should return all entities',
       () => repository.findAll()
         .then((entities) => {
-          expect(entities.length).to.equal(2)
-          expect(entities[0].email).to.equal('john.doe@example.invalid')
-          expect(entities[1].email).to.equal('jane.doe@example.invalid')
+          expect(entities.length).toEqual(2)
+          expect(entities[0].email).toEqual('john.doe@example.invalid')
+          expect(entities[1].email).toEqual('jane.doe@example.invalid')
         })
     )
   })
