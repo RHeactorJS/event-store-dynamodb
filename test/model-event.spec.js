@@ -1,6 +1,6 @@
 /* global describe it expect */
 
-const {ModelEvent} = require('../src/model-event')
+const {ModelEvent} = require('../')
 
 describe('ModelEvent', () => {
   it('should have default values', () => {

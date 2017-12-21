@@ -1,13 +1,13 @@
 /* global describe it beforeAll afterAll expect */
 
-const {EventStore} = require('../src/event-store')
-const {ModelEvent} = require('../src/model-event')
-const {AggregateRepository} = require('../src/aggregate-repository')
-const {SnapshotAggregateRepository} = require('../src/snapshot-aggregate-repository')
+const {EventStore} = require('../')
+const {ModelEvent} = require('../')
+const {AggregateRepository} = require('../')
+const {SnapshotAggregateRepository} = require('../')
 const {Promise} = require('bluebird')
 
-const {AggregateRoot} = require('../src/aggregate-root')
-const {AggregateMeta} = require('../src/aggregate-meta')
+const {AggregateRoot} = require('../')
+const {AggregateMeta} = require('../')
 const {dynamoDB, close} = require('./helper')
 
 class DummyModel extends AggregateRoot {

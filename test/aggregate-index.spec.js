@@ -1,6 +1,6 @@
 /* global describe it beforeAll afterAll expect */
 
-const {AggregateIndex} = require('../src/aggregate-index')
+const {AggregateIndex} = require('../')
 const {Promise} = require('bluebird')
 const {close, dynamoDB} = require('./helper')
 

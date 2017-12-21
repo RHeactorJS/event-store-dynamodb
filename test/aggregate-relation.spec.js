@@ -1,8 +1,8 @@
 /* global describe it beforeAll afterAll expect */
 
-const {AggregateRelation} = require('../src/aggregate-relation')
-const {EventStore} = require('../src/event-store')
-const {AggregateRepository} = require('../src/aggregate-repository')
+const {AggregateRelation} = require('../')
+const {EventStore} = require('../')
+const {AggregateRepository} = require('../')
 const {Promise} = require('bluebird')
 const {DummyModel} = require('./dummy-model')
 const {dynamoDB, close} = require('./helper')

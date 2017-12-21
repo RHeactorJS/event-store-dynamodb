@@ -1,6 +1,6 @@
-const {AggregateRoot} = require('../src/aggregate-root')
+const {AggregateRoot} = require('../')
 const {UnhandledDomainEventError} = require('@rheactorjs/errors')
-const {AggregateMeta} = require('../src/aggregate-meta')
+const {AggregateMeta} = require('../')
 
 class DummyModel extends AggregateRoot {
   /**

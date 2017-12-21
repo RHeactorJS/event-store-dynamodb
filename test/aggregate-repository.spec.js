@@ -1,9 +1,9 @@
 /* global describe it beforeAll afterAll expect */
 
-const {AggregateRepository, AggregateRoot, AggregateMeta, AggregateMetaType, EventStore} = require('../src')
+const {AggregateRepository, AggregateRoot, AggregateMeta, AggregateMetaType, EventStore} = require('../')
 const {Promise} = require('bluebird')
 
-const {ModelEvent} = require('../src/model-event')
+const {ModelEvent} = require('../')
 const {EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError} = require('@rheactorjs/errors')
 const {dynamoDB, close} = require('./helper')
 

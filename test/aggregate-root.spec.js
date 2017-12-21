@@ -1,7 +1,7 @@
 /* global describe it expect */
 
-const {AggregateRoot, AggregateMeta} = require('../src')
-const {ModelEvent} = require('../src/model-event')
+const {AggregateRoot, AggregateMeta} = require('../')
+const {ModelEvent} = require('../')
 
 const {UnhandledDomainEventError} = require('@rheactorjs/errors')
 

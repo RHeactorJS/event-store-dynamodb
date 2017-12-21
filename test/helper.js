@@ -1,9 +1,9 @@
 /* global jest */
 
 const {DynamoDB} = require('aws-sdk')
-const {EventStore} = require('../src/event-store')
-const {AggregateRelation} = require('../src/aggregate-relation')
-const {AggregateIndex} = require('../src/aggregate-index')
+const {EventStore} = require('../')
+const {AggregateRelation} = require('../')
+const {AggregateIndex} = require('../')
 const dinossauro = require('dinossauro')
 const AWS = require('aws-sdk')
 const Promise = require('bluebird')

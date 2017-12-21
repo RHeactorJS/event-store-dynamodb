@@ -1,7 +1,7 @@
 /* global describe it beforeAll afterAll expect */
 
-const {EventStore} = require('../src/event-store')
-const {ModelEvent} = require('../src/model-event')
+const {EventStore} = require('../')
+const {ModelEvent} = require('../')
 const {Promise} = require('bluebird')
 const {dynamoDB, close} = require('./helper')
 
