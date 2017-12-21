@@ -1,3 +1,5 @@
+/* global jest */
+
 const {DynamoDB} = require('aws-sdk')
 const {EventStore} = require('../src/event-store')
 const {AggregateRelation} = require('../src/aggregate-relation')
@@ -6,6 +8,8 @@ const dinossauro = require('dinossauro')
 const AWS = require('aws-sdk')
 const Promise = require('bluebird')
 AWS.config.setPromisesDependency(Promise)
+
+jest.setTimeout(30000)
 
 const up = () => Promise
   .try(dinossauro.up)
