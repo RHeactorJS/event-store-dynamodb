@@ -4,8 +4,8 @@
   "version": "0.0.0-development",
   "main": "src/index.js",
   "scripts": {
-    "test": "jest --forceExit",
-    "test:coverage": "jest --forceExit --coverage",
+    "test": "jest -i --forceExit",
+    "test:coverage": "jest -i --forceExit --coverage",
     "test:coverage-travis": "npm run test:coverage && codeclimate-test-reporter < ./coverage/lcov.info && rm -rf ./coverage",
     "lint": "standard",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
