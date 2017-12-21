@@ -15,17 +15,3 @@ Contains [helper methods to manage secondary indices](https://github.com/RHeacto
 ## Versioning
 
 Storing events per aggregateName is done in a list per individual aggregateName, the order of the insertion is guaranteed by using the version as the range key.
-
-Lets assume we want to create a user `17`, we store a `UserCreatedEvent` for this aggregateName id:
-
-```javascript
-eventStore.persist(new ModelEvent('UserCreatedEvent', '17', {name: 'John'}))
-```
-
-If we add another event later:
-
-```javascript
-eventStore.persist(new ModelEvent('UserNameUpdatedEvent', '17', {name: 'Mike'}))
-```
-
-this event will be appended to the list and stored as version 2.
