@@ -1,109 +1,193 @@
 const {EntryAlreadyExistsError, EntryNotFoundError} = require('@rheactorjs/errors')
+const t = require('tcomb')
 
 class AggregateIndex {
   /**
    * Manages indices for aggregates
    *
-   * @param {String} aggregate
+   * @param {String} aggregateName
    * @param {DynamoDB} dynamoDB
+   * @param {String} tableName
    */
-  constructor (aggregate, dynamoDB) {
-    this.aggregate = aggregate
-    this.dynamoDB = dynamoDB
+  constructor (aggregateName, dynamoDB, tableName = 'indexes') {
+    this.aggregateName = t.String(aggregateName, ['AggregateIndex()', ['aggregateName:string']])
+    this.dynamoDB = t.Object(dynamoDB, ['AggregateIndex()', 'dynamoDB:Object'])
+    this.tableName = t.String(tableName, ['AggregateIndex()', 'tableName:String'])
   }
 
   /**
-   * Add the value to the index of the given type for the aggregate identified by the given aggregateId
+   * Add the aggregateId for the given key to the index
    *
-   * @param {String} type
-   * @param {String} value
+   * @param {String} indexName
+   * @param {String} key
    * @param {String} aggregateId
    * @returns {Promise}
    */
-  add (type, value, aggregateId) {
-    return this.dynamoDB.hmsetAsync(this.aggregate + '.' + type + '.index', value, aggregateId)
-  }
-
-  /**
-   * Add the value to the index of the given type for the aggregate identified by the given aggregateId
-   * if it is not already present
-   *
-   * @param {String} type
-   * @param {String} value
-   * @param {String} aggregateId
-   * @returns {Promise}
-   * @throws EntryAlreadyExistsError If entry exists
-   */
-  addIfNotPresent (type, value, aggregateId) {
-    let index = this.aggregate + '.' + type + '.index'
-    return this.dynamoDB.evalAsync(
-      'local v = dynamoDB.call(\'HMGET\',ARGV[1],ARGV[2]) if v[1] == false then dynamoDB.call(\'HMSET\',ARGV[1],ARGV[2],ARGV[3]) return true else return false end',
-      0, index, value, aggregateId
-    )
-      .then((res) => {
-        if (res === null) {
-          throw new EntryAlreadyExistsError('Entry for index "' + index + '" with key "' + value + '" already ' +
-            'exists. Tried to add aggregate "' + aggregateId + '".')
+  add (indexName, key, aggregateId) {
+    t.String(indexName, ['AggregateIndex', 'add()', 'indexName:String'])
+    t.String(key, ['AggregateIndex', 'add()', 'value:String'])
+    t.String(aggregateId, ['AggregateIndex', 'add()', 'aggregateId:String'])
+    return this.dynamoDB
+      .updateItem({
+        TableName: this.tableName,
+        Key: {
+          AggregateIndexName: {
+            S: `${this.aggregateName}.${indexName}`
+          },
+          IndexKey: {
+            S: key
+          }
+        },
+        UpdateExpression: 'SET #AggregateIds = :AggregateId',
+        ExpressionAttributeNames: {
+          '#AggregateIds': 'AggregateIds'
+        },
+        ExpressionAttributeValues: {
+          ':AggregateId': {S: aggregateId}
         }
-        return true
       })
+      .promise()
   }
 
   /**
-   * Remove the aggregate identified by the given aggregateId from the index of the given type for the given value
+   * Store the aggregateId for the given key if it is not already present in the index
    *
-   * @param {String} type
-   * @param {String} value
-   * @param {String} aggregateId
-   * @returns {Promise}
-   */
-  remove (type, value, aggregateId) {
-    let index = this.aggregate + '.' + type + '.index'
-    return this.dynamoDB.hdelAsync(index, value, aggregateId)
-  }
-
-  /**
-   * Add the value to the list of the given type for the aggregate identified by the given aggregateId
-   * if it is not already present
+   * This realizes a unique key index
    *
-   * @param {String} type
+   * @param {String} indexName
+   * @param {String} key
    * @param {String} aggregateId
    * @returns {Promise}
    * @throws EntryAlreadyExistsError If entry exists
    */
-  addToListIfNotPresent (type, aggregateId) {
-    let index = this.aggregate + '.' + type + '.list'
-    return this.dynamoDB.saddAsync(index, aggregateId)
-      .then((res) => {
-        if (!res) {
-          throw new EntryAlreadyExistsError('Aggregate "' + aggregateId + '" already member of "' + index + '".')
+  addIfNotPresent (indexName, key, aggregateId) {
+    t.String(indexName, ['AggregateIndex', 'addIfNotPresent()', 'indexName:String'])
+    t.String(key, ['AggregateIndex', 'addIfNotPresent()', 'value:String'])
+    t.String(aggregateId, ['AggregateIndex', 'addIfNotPresent()', 'aggregateId:String'])
+    return this.addToListIfNotPresent(`${indexName}.${key}`, aggregateId)
+  }
+
+  /**
+   * Remove the aggregateId for the given key from index
+   *
+   * @param {String} indexName
+   * @param {String} key
+   * @param {String} aggregateId
+   * @returns {Promise}
+   */
+  remove (indexName, key, aggregateId) {
+    t.String(indexName, ['AggregateIndex', 'remove()', 'indexName:String'])
+    t.String(key, ['AggregateIndex', 'remove()', 'value:String'])
+    t.String(aggregateId, ['AggregateIndex', 'remove()', 'aggregateId:String'])
+    return this.dynamoDB
+      .deleteItem({
+        TableName: this.tableName,
+        Key: {
+          AggregateIndexName: {
+            S: `${this.aggregateName}.${indexName}`
+          },
+          IndexKey: {
+            S: key
+          }
         }
-        return true
+      })
+      .promise()
+  }
+
+  /**
+   * Add the value to the list of the given type for the aggregateName identified by the given aggregateId
+   * if it is not already present
+   *
+   * @param {String} indexName
+   * @param {String} aggregateId
+   * @returns {Promise}
+   * @throws EntryAlreadyExistsError If entry exists
+   */
+  addToListIfNotPresent (indexName, aggregateId) {
+    t.String(indexName, ['AggregateIndex', 'addToListIfNotPresent()', 'indexName:String'])
+    t.String(aggregateId, ['AggregateIndex', 'addToListIfNotPresent()', 'aggregateId:String'])
+    return this.dynamoDB
+      .updateItem({
+        TableName: this.tableName,
+        Key: {
+          AggregateIndexName: {
+            S: this.aggregateName
+          },
+          IndexKey: {
+            S: indexName
+          }
+        },
+        UpdateExpression: 'ADD #AggregateIds :AggregateId',
+        ConditionExpression: 'NOT contains(#AggregateIds, :AggregateId)',
+        ExpressionAttributeNames: {
+          '#AggregateIds': 'AggregateIds'
+        },
+        ExpressionAttributeValues: {
+          ':AggregateId': {'SS': [aggregateId]}
+        }
+      })
+      .promise()
+      .catch(err => {
+        if (err.code === 'ConditionalCheckFailedException') throw new EntryAlreadyExistsError(`"${indexName}" already contains "${aggregateId}"!`)
+        throw err
       })
   }
 
   /**
    * Returns the entries of the list
    *
-   * @param {String} type
+   * @param {String} indexName
    * @returns {Promise.<Array>}
    */
-  getList (type) {
-    let index = this.aggregate + '.' + type + '.list'
-    return this.dynamoDB.smembersAsync(index)
+  getList (indexName) {
+    t.String(indexName, ['AggregateIndex', 'getList()', 'indexName:String'])
+    return this.dynamoDB
+      .getItem({
+        TableName: this.tableName,
+        Key: {
+          AggregateIndexName: {
+            S: this.aggregateName
+          },
+          IndexKey: {
+            S: indexName
+          }
+        }
+      })
+      .promise()
+      .then(({Item}) => Item && Item.AggregateIds ? Item.AggregateIds.SS : [])
   }
 
   /**
-   * Remove the value from the list of the given type for the aggregate identified by the given aggregateId
+   * Remove the value from the list of the given type for the aggregateName identified by the given aggregateId
    *
-   * @param {String} type
+   * @param {String} indexName
    * @param {String} aggregateId
    * @returns {Promise}
    * @throws EntryAlreadyExistsError If entry exists
    */
-  removeFromList (type, aggregateId) {
-    let index = this.aggregate + '.' + type + '.list'
-    return this.dynamoDB.sremAsync(index, aggregateId)
+  removeFromList (indexName, aggregateId) {
+    t.String(indexName, ['AggregateIndex', 'removeFromList()', 'indexName:String'])
+    t.String(aggregateId, ['AggregateIndex', 'removeFromList()', 'aggregateId:String'])
+    return this.dynamoDB
+      .updateItem({
+        TableName: this.tableName,
+        Key: {
+          AggregateIndexName: {
+            S: this.aggregateName
+          },
+          IndexKey: {
+            S: indexName
+          }
+        },
+        UpdateExpression: 'DELETE #AggregateIds :AggregateId',
+        ExpressionAttributeNames: {
+          '#AggregateIds': 'AggregateIds'
+        },
+        ExpressionAttributeValues: {
+          ':AggregateId': {'SS': [aggregateId]}
+        }
+      })
+      .promise()
   }
 
   /**
@@ -121,33 +205,86 @@ class AggregateIndex {
   }
 
   /**
-   * Return an aggregateId by the given index type and value
+   * Return an aggregateId by the given index type and key
    *
-   * @param {String} type
-   * @param {String} value
+   * @param {String} indexName
+   * @param {String} key
    * @returns {Promise}
    * @throws EntryNotFoundError
    */
-  get (type, value) {
+  get (indexName, key) {
+    t.String(indexName, ['AggregateIndex', 'get()', 'indexName:String'])
+    t.String(key, ['AggregateIndex', 'get()', 'key:String'])
     return this.dynamoDB
-      .hmgetAsync(this.aggregate + '.' + type + '.index', value)
-      .then((res) => {
-        if (res[0] === null) {
-          throw new EntryNotFoundError('Aggregate not found with ' + type + ' "' + value + '"')
+      .getItem({
+        TableName: this.tableName,
+        Key: {
+          AggregateIndexName: {
+            S: `${this.aggregateName}.${indexName}`
+          },
+          IndexKey: {
+            S: key
+          }
         }
-        return res[0]
+      })
+      .promise()
+      .then(({Item}) => {
+        if (Item && Item.AggregateIds) return Item.AggregateIds.S
+        throw new EntryNotFoundError(`Item for "${indexName}.${key}" not found.`)
       })
   }
 
   /**
    * Return all aggregateIds in the given index type
    *
-   * @param {String} type
+   * @param {String} indexName
    * @returns {Promise}
    */
-  getAll (type) {
+  getAll (indexName, items = [], ExclusiveStartKey) {
+    t.String(indexName, ['AggregateIndex', 'getAll()', 'indexName:String'])
     return this.dynamoDB
-      .hvalsAsync(this.aggregate + '.' + type + '.index')
+      .query({
+        TableName: this.tableName,
+        ExclusiveStartKey,
+        KeyConditionExpression: 'AggregateIndexName = :AggregateIndexName',
+        ExpressionAttributeValues: {':AggregateIndexName': {S: `${this.aggregateName}.${indexName}`}}
+      })
+      .promise()
+      .then(({Items, LastEvaluatedKey}) => {
+        items = [...items, ...Items.map(({AggregateIds: {S}}) => S)]
+        if (LastEvaluatedKey) return this.get(indexName, items, LastEvaluatedKey)
+        return items
+      })
+  }
+
+  createTable () {
+    return this.dynamoDB.createTable({
+      TableName: this.tableName,
+      KeySchema: [
+        {
+          AttributeName: 'AggregateIndexName',
+          KeyType: 'HASH'
+        },
+        {
+          AttributeName: 'IndexKey',
+          KeyType: 'RANGE'
+        }
+      ],
+      AttributeDefinitions: [
+        {
+          AttributeName: 'AggregateIndexName',
+          AttributeType: 'S'
+        },
+        {
+          AttributeName: 'IndexKey',
+          AttributeType: 'S'
+        }
+      ],
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 1,
+        WriteCapacityUnits: 1
+      }
+    }).promise()
   }
 }
 

@@ -1,86 +1,175 @@
-const {Promise} = require('bluebird')
 const {ModelEvent, ModelEventType} = require('./model-event')
-const {AggregateIdType, PositiveIntegerType} = require('./types')
-const {String: StringType, Object: ObjectType} = require('tcomb')
+const t = require('tcomb')
 
 class EventStore {
   /**
-   * Creates a new EventStore for the given aggregate, e.g. 'user'.
+   * Creates a new EventStore for the given aggregateName, e.g. 'user'.
    *
-   * An event store maintains a version counter per aggregate id which guarantees that events have an ever increasing
+   * An event store maintains a version counter per aggregateName id which guarantees that events have an ever increasing
    * version id.
    *
-   * @param {String} aggregate
+   * @param {String} aggregateName
    * @param {DynamoDB} dynamoDB
-   * @param {Number} numEvents
+   * @param {string} tableName
    */
-  constructor (aggregate, dynamoDB, numEvents = 100) {
-    StringType(aggregate)
-    ObjectType(dynamoDB)
-    PositiveIntegerType(numEvents)
-    this.aggregate = aggregate
-    this.dynamoDB = dynamoDB
-    this.numEvents = numEvents
+  constructor (aggregateName, dynamoDB, tableName = 'events') {
+    this.aggregateName = t.String(aggregateName, ['EventStore()', ['aggregateName:string']])
+    this.dynamoDB = t.Object(dynamoDB, ['EventStore()', ['dynamoDB:object']])
+    this.tableName = t.String(tableName, ['EventStore()', ['tableName:string']])
+  }
+
+  getId (aggregateId) {
+    t.String(aggregateId, ['EventStore', 'getId()', 'aggregateId:String'])
+    return `${this.aggregateName}.${aggregateId}`
   }
 
   /**
    * Persists an event
    *
    * The dynamoDB list type guarantees the order of insertion. So we don't need to jump through hoops to manage a version
-   * id per aggregate. This can simply be done in the fetch method.
+   * id per aggregateName. This can simply be done in the fetch method.
    *
    * @param {ModelEvent} event
    * @return {Promise}
    */
   persist (event) {
-    ModelEventType(event)
-    let aggregateEvents = this.aggregate + '.events.' + event.aggregateId
-    let data = {
-      eventType: event.name,
-      eventPayload: event.data,
-      eventCreatedAt: event.createdAt.getTime()
-    }
-    if (event.createdBy) {
-      data.eventCreatedBy = event.createdBy
-    }
-    return Promise.resolve(this.dynamoDB.rpushAsync(aggregateEvents, JSON.stringify(data)))
+    ModelEventType(event, ['EventStore', 'persist()', 'event:ModelEvent'])
+    return this.dynamoDB
+      .putItem({
+        Item: {
+          Id: {
+            S: this.getId(event.aggregateId)
+          },
+          Version: {
+            N: `${event.aggregateVersion}`
+          },
+          AggregateId: {
+            S: event.aggregateId
+          },
+          AggregateName: {
+            S: this.aggregateName
+          },
+          Name: {
+            S: event.name
+          },
+          CreatedAt: {
+            S: event.createdAt.toISOString()
+          },
+          Payload: {
+            S: JSON.stringify(event.payload)
+          }
+        },
+        TableName: this.tableName
+      })
+      .promise()
   }
 
   /**
-   * Returns the events for the aggregate identified by aggregateId.
+   * Returns the events for the aggregateName identified by aggregateId.
    *
    * @param {String} aggregateId
    * @return {Promise.<Array.<ModelEvent>>}
    */
   fetch (aggregateId) {
-    AggregateIdType(aggregateId)
-    let aggregateEvents = this.aggregate + '.events.' + aggregateId
-    let start = 0
-    let fetchedEvents = []
-    let fetchEvents = start => {
-      return Promise
-        .resolve(this.dynamoDB.lrangeAsync(aggregateEvents, start, start + this.numEvents - 1))
-        .then((res) => {
-          return Promise
-            .map(res, (e) => {
-              fetchedEvents.push(e)
-            })
-            .then(() => {
-              if (res.length === this.numEvents) {
-                return fetchEvents(start + this.numEvents)
-              } else {
-                return fetchedEvents
-              }
-            })
-        })
-    }
-    return fetchEvents(start)
-      .map((e) => {
-        const event = JSON.parse(e)
-        const createdAt = new Date(event.eventCreatedAt || 0) // events did not always have this
-        return new ModelEvent(aggregateId, event.eventType, event.eventPayload, createdAt, event.eventCreatedBy)
+    t.String(aggregateId, ['EventStore', 'fetch()', 'aggregateId:String'])
+    const fetchEvents = (events = [], ExclusiveStartKey) => this.dynamoDB
+      .query({
+        TableName: this.tableName,
+        ExclusiveStartKey,
+        KeyConditionExpression: 'Id = :id AND Version > :version',
+        ExpressionAttributeValues: {':id': {'S': this.getId(aggregateId)}, ':version': {'N': '0'}}
       })
+      .promise()
+      .then(({Items, LastEvaluatedKey}) => {
+        events = [...events, ...Items]
+        if (LastEvaluatedKey) return fetchEvents(events, LastEvaluatedKey)
+        return events
+      })
+    return fetchEvents()
+      .map(event => new ModelEvent(aggregateId, +event.Version.N, event.Name.S, JSON.parse(event.Payload.S), new Date(event.CreatedAt.S)))
+  }
+
+  /**
+   * Returns the ids of all aggregates
+   *
+   * @return {Promise<string[]>}
+   */
+  list () {
+    const fetchAggregates = (aggregates = [], ExclusiveStartKey) => this.dynamoDB
+      .query({
+        TableName: this.tableName,
+        IndexName: 'Aggregate-index',
+        ExclusiveStartKey,
+        KeyConditionExpression: 'AggregateName = :AggregateName',
+        ExpressionAttributeValues: {':AggregateName': {'S': this.aggregateName}}
+      })
+      .promise()
+      .then(({Items, LastEvaluatedKey}) => {
+        aggregates = [...aggregates, ...Items.map(({AggregateId}) => AggregateId.S)]
+        if (LastEvaluatedKey) return fetchAggregates(aggregates, LastEvaluatedKey)
+        return aggregates
+      })
+    return fetchAggregates()
+      .then(aggregates => aggregates.reduce((aggregates, aggregate) => {
+        if (!aggregates.includes(aggregate)) aggregates.push(aggregate)
+        return aggregates
+      }, []))
+  }
+
+  createTable () {
+    return this.dynamoDB.createTable({
+      TableName: this.tableName,
+      KeySchema: [
+        {
+          AttributeName: 'Id',
+          KeyType: 'HASH'
+        },
+        {
+          AttributeName: 'Version',
+          KeyType: 'RANGE'
+        }
+      ],
+      AttributeDefinitions: [
+        {
+          AttributeName: 'Id',
+          AttributeType: 'S'
+        },
+        {
+          AttributeName: 'Version',
+          AttributeType: 'N'
+        },
+        {
+          AttributeName: 'AggregateName',
+          AttributeType: 'S'
+        }
+      ],
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 1,
+        WriteCapacityUnits: 1
+      },
+      GlobalSecondaryIndexes: [
+        {
+          IndexName: 'Aggregate-index',
+          KeySchema: [
+            {
+              AttributeName: 'AggregateName',
+              KeyType: 'HASH'
+            }
+          ],
+          Projection: {
+            ProjectionType: 'INCLUDE',
+            NonKeyAttributes: ['AggregateId']
+          },
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
+      ]
+    }).promise()
   }
 }
 
-module.exports = {EventStore}
+const EventStoreType = t.irreducible('EventStoreType', x => x instanceof EventStore)
+
+module.exports = {EventStore, EventStoreType}

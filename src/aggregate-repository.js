@@ -1,43 +1,34 @@
-const {EventStore} = require('./event-store')
+const {EventStoreType} = require('./event-store')
 const {ModelEvent, ModelEventType} = require('./model-event')
 const {EntryNotFoundError, EntryDeletedError} = require('@rheactorjs/errors')
-const {Promise} = require('bluebird')
-const {MaybeStringType, AggregateIdType} = require('./types')
-const {irreducible, String: StringType, Function: FunctionType, Object: ObjectType} = require('tcomb')
+const t = require('tcomb')
+const {v4} = require('uuid')
+const {PositiveInteger} = require('./types')
 
 class AggregateRepository {
   /**
-   * Creates a new aggregate repository
+   * Creates a new aggregateName repository
    *
    * @param {AggregateRoot} {applyEvent: {Function}}
-   * @param {String} alias
-   * @param {DynamoDB} dynamoDB
+   * @param {EventStore} eventStore
    */
-  constructor ({applyEvent}, alias, dynamoDB) {
-    FunctionType(applyEvent, ['AggregateRepository', 'root:AggregateRoot'])
-    StringType(alias, ['AggregateRepository', 'alias:String'])
-    this.applyEvent = applyEvent
-    this.alias = alias
-    this.prefix = alias.charAt(0).toUpperCase() + alias.slice(1)
-    this.eventStore = new EventStore(alias, dynamoDB)
-    this.dynamoDB = dynamoDB
+  constructor ({applyEvent}, eventStore) {
+    this.applyEvent = t.Function(applyEvent, ['AggregateRepository', 'root:AggregateRoot'])
+    this.eventStore = EventStoreType(eventStore, ['AggregateRepository', 'eventStore:EventStore'])
   }
 
   /**
    * Generic method for add aggregates to the collection.
    * The repository will assign an ID to them.
    *
-   * Calls applyEvent with the created event on the aggregate.
+   * Calls applyEvent with the created event on the aggregateName.
    *
-   * @param {Object} data
-   * @param {String} createdBy
+   * @param {Object} payload
    * @returns {Promise.<ModelEvent>}
    */
-  add (data, createdBy) {
-    ObjectType(data, ['AggregateRepository', 'add()', 'data:Object'])
-    MaybeStringType(createdBy, ['AggregateRepository', 'add()', 'createdBy:?String'])
-    return this.dynamoDB.incrAsync(this.alias + ':id')
-      .then((id) => this.persistEvent(new ModelEvent('' + id, this.prefix + 'CreatedEvent', data, new Date(), createdBy)))
+  add (payload) {
+    t.Object(payload, ['AggregateRepository', 'add()', 'payload:Object'])
+    return this.persistEvent(new ModelEvent(v4(), 1, this.eventStore.aggregateName + 'CreatedEvent', payload, new Date()))
   }
 
   /**
@@ -54,14 +45,17 @@ class AggregateRepository {
   /**
    * Generic method for removing aggregates from the collection
    *
-   * @param {Number} id
-   * @param {String} createdBy
+   * @param {String} id
+   * @param {Number} version
    * @returns {Promise.<ModelEvent>}
    */
-  remove (id, createdBy) {
-    AggregateIdType(id, ['AggregateRepository', 'remove()', 'id:AggregateId'])
-    MaybeStringType(createdBy, ['AggregateRepository', 'remove()', 'createdBy:?String'])
-    return this.persistEvent(new ModelEvent(id, this.prefix + 'DeletedEvent', {}, new Date(), createdBy))
+  remove (id, version) {
+    t.String(id, ['AggregateRepository', 'remove()', 'id:AggregateId'])
+    t.maybe(PositiveInteger)(version, ['AggregateRepository', 'remove()', 'version?:int>0'])
+    if (!version) {
+      return this.findById(id).then(aggregate => this.remove(id, aggregate.meta.version))
+    }
+    return this.persistEvent(new ModelEvent(id, version + 1, this.eventStore.aggregateName + 'DeletedEvent', {}, new Date()))
   }
 
   /**
@@ -71,8 +65,9 @@ class AggregateRepository {
    * @returns {Promise.<AggregateRoot>} or undefined if not found
    */
   findById (id) {
-    AggregateIdType(id, ['AggregateRepository', 'findById()', 'id:AggregateId'])
-    return this.eventStore.fetch(id)
+    t.String(id, ['AggregateRepository', 'findById()', 'id:AggregateId'])
+    return this.eventStore
+      .fetch(id)
       .reduce((aggregate, event) => this.applyEvent(event, aggregate === false ? undefined : aggregate), false)
       .then(aggregate => {
         if (!aggregate) return
@@ -81,25 +76,15 @@ class AggregateRepository {
   }
 
   /**
-   * Returns all entities
+   * Generic method for loading all aggregates
    *
-   * NOTE: naively returns all entities by fetching them one by one by ID starting
-   * from 1 to the current max id.
-   *
-   * @returns {Promise.<Array.<AggregateRoot>>}
+   * @returns {Promise.<AggregateRoot[]>}
    */
   findAll () {
-    return this.dynamoDB.getAsync(this.alias + ':id')
-      .then((maxId) => {
-        let promises = []
-        for (let i = 1; i <= maxId; i++) {
-          promises.push(this.findById('' + i))
-        }
-        return Promise.all(promises)
-      })
-      .filter((item) => {
-        return item !== undefined
-      })
+    return this.eventStore
+      .list()
+      .map(id => this.findById(id))
+      .filter(aggregate => aggregate) // remove deleted
   }
 
   /**
@@ -110,21 +95,21 @@ class AggregateRepository {
    * @throws {EntryNotFoundError} if entity is not found
    */
   getById (id) {
-    AggregateIdType(id, ['AggregateRepository', 'getById()', 'id:AggregateId'])
+    String(id, ['AggregateRepository', 'getById()', 'id:AggregateId'])
     return this.eventStore.fetch(id)
       .reduce((aggregate, event) => this.applyEvent(event, aggregate === false ? undefined : aggregate), false)
       .then(aggregate => {
         if (!aggregate) {
-          throw new EntryNotFoundError(this.alias + ' with id "' + id + '" not found.')
+          throw new EntryNotFoundError(this.eventStore.aggregateName + ' with id "' + id + '" not found.')
         }
         if (aggregate.meta.isDeleted) {
-          throw new EntryDeletedError(this.alias + ' with id "' + id + '" is deleted.', aggregate)
+          throw new EntryDeletedError(this.eventStore.aggregateName + ' with id "' + id + '" is deleted.', aggregate)
         }
         return aggregate
       })
   }
 }
 
-const AggregateRepositoryType = irreducible('AggregateRepositoryType', x => x instanceof AggregateRepository)
+const AggregateRepositoryType = t.irreducible('AggregateRepositoryType', x => x instanceof AggregateRepository)
 
 module.exports = {AggregateRepository, AggregateRepositoryType}

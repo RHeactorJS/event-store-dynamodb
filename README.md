@@ -14,9 +14,9 @@ Contains [helper methods to manage secondary indices](https://github.com/RHeacto
 
 ## Versioning
 
-Storing events per aggregate is done in a list per individual aggregate, the order of the insertion is guaranteed by using the version as the range key.
+Storing events per aggregateName is done in a list per individual aggregateName, the order of the insertion is guaranteed by using the version as the range key.
 
-Lets assume we want to create a user `17`, we store a `UserCreatedEvent` for this aggregate id:
+Lets assume we want to create a user `17`, we store a `UserCreatedEvent` for this aggregateName id:
 
 ```javascript
 eventStore.persist(new ModelEvent('UserCreatedEvent', '17', {name: 'John'}))

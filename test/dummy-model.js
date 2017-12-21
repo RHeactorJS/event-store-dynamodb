@@ -20,10 +20,10 @@ class DummyModel extends AggregateRoot {
    * @return {DummyModel}
    */
   static applyEvent (event, dummy) {
-    const {name, data, createdAt, aggregateId} = event
+    const {name, payload, createdAt, aggregateId} = event
     switch (name) {
       case 'DummyCreatedEvent':
-        return new DummyModel(data.email, new AggregateMeta(aggregateId, 1, createdAt))
+        return new DummyModel(payload.email, new AggregateMeta(aggregateId, 1, createdAt))
       case 'DummyDeletedEvent':
         return new DummyModel(dummy.email, dummy.meta.deleted(createdAt))
       default:

@@ -1,24 +1,22 @@
 /* global describe it beforeAll expect */
 
 const {AggregateRelation} = require('../src/aggregate-relation')
+const {EventStore} = require('../src/event-store')
 const {AggregateRepository} = require('../src/aggregate-repository')
 const {Promise} = require('bluebird')
 const {DummyModel} = require('./dummy-model')
-const {clearDb, dynamoDB} = require('./helper')
+const {dynamoDB} = require('./helper')
 
 describe('AggregateRelation', function () {
-  beforeAll(clearDb)
-
   let repository, relation
 
   beforeAll(() => dynamoDB()
-    .then(dynamoDB => {
+    .spread((dynamoDB, eventsTable, relationsTable) => {
       repository = new AggregateRepository(
         DummyModel,
-        'dummy',
-        dynamoDB
+        new EventStore('Dummy', dynamoDB, eventsTable)
       )
-      relation = new AggregateRelation(repository, dynamoDB)
+      relation = new AggregateRelation(dynamoDB, relationsTable)
     }))
 
   it('should add items', () => Promise
@@ -32,9 +30,9 @@ describe('AggregateRelation', function () {
         .then(() => {
           return relation.findByRelatedId('meeting', '42')
         })
-        .spread((u1, u2) => {
-          expect(u1.email).toEqual('josh.doe@example.invalid')
-          expect(u2.email).toEqual('jasper.doe@example.invalid')
+        .then(ids => {
+          expect(ids).toContain(event1.aggregateId)
+          expect(ids).toContain(event2.aggregateId)
         })
     })
   )
@@ -51,20 +49,8 @@ describe('AggregateRelation', function () {
         .then(() => relation.findByRelatedId('acme', '17'))
         .then((items) => {
           expect(items.length).toEqual(1)
-          expect(items[0].email).toEqual('jane.doe@example.invalid')
+          expect(items[0]).toEqual(event2.aggregateId)
         })
     })
   )
-
-  it('should honor repository alias', (done) => {
-    const relation = new AggregateRelation({alias: 'foo'})
-    relation.dynamoDB = {
-      saddAsync: (key, id) => {
-        expect(key).toEqual('foo:acme:42')
-        expect(id).toEqual('17')
-        done()
-      }
-    }
-    relation.addRelatedId('acme', '42', '17')
-  })
 })

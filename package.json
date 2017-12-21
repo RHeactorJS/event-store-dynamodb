@@ -29,15 +29,17 @@
     "@rheactorjs/errors": "^1.0.2",
     "aws-sdk": "^2.172.0",
     "bluebird": "^3.5.1",
-    "tcomb": "^3.2.24"
+    "tcomb": "^3.2.24",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^5.2.5",
     "@commitlint/config-angular": "^5.1.1",
     "codeclimate-test-reporter": "^0.5.0",
+    "dinossauro": "0.0.7",
     "husky": "^0.14.3",
     "jest": "^22.0.3",
-    "semantic-release": "^8.2.0",
+    "semantic-release": "^11.0.2",
     "standard": "^10.0.3"
   },
   "files": [

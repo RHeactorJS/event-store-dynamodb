@@ -1,4 +1,4 @@
-const {maybe, irreducible} = require('tcomb')
+const t = require('tcomb')
 const {ModelEventType} = require('./model-event')
 const {UnhandledDomainEventError} = require('@rheactorjs/errors')
 const {AggregateMetaType} = require('./aggregate-meta')
@@ -23,8 +23,8 @@ class AggregateRoot {
   }
 
   /**
-   * Applies the event to the aggregate.
-   * Return a new, updated aggregate.
+   * Applies the event to the aggregateName.
+   * Return a new, updated aggregateName.
    *
    * @param {ModelEvent} event
    * @param {AggregateRoot|undefined} aggregate May be undefined for the first event (usually the create event)
@@ -32,12 +32,12 @@ class AggregateRoot {
    */
   static applyEvent (event, aggregate) {
     ModelEventType(event, ['AggregateRoot', 'applyEvent()', 'event:ModelEvent'])
-    MaybeAggregateRootType(aggregate, ['AggregateRoot', 'applyEvent()', 'aggregate:?AggregateRoot'])
+    MaybeAggregateRootType(aggregate, ['AggregateRoot', 'applyEvent()', 'aggregateName:?AggregateRoot'])
     throw new UnhandledDomainEventError(`${event.name} because applyEvent is not implemented.`)
   }
 }
 
-const AggregateRootType = irreducible('AggregateRootType', x => x instanceof AggregateRoot)
-const MaybeAggregateRootType = maybe(AggregateRootType)
+const AggregateRootType = t.irreducible('AggregateRootType', x => x instanceof AggregateRoot)
+const MaybeAggregateRootType = t.maybe(AggregateRootType)
 
 module.exports = {AggregateRoot, AggregateRootType, MaybeAggregateRootType}

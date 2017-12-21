@@ -2,18 +2,17 @@
 
 const {AggregateIndex} = require('../src/aggregate-index')
 const {Promise} = require('bluebird')
-const {clearDb, close, dynamoDB} = require('./helper')
+const {close, dynamoDB} = require('./helper')
 
 const {EntryAlreadyExistsError} = require('@rheactorjs/errors')
 
 describe('AggregateIndex', () => {
-  beforeAll(clearDb)
   afterAll(close)
 
   let aggregateIndex
 
-  beforeAll(() => dynamoDB().then(dynamoDB => {
-    aggregateIndex = new AggregateIndex('user', dynamoDB)
+  beforeAll(() => dynamoDB().spread((dynamoDB, eventsTable, relationsTable, indexTable) => {
+    aggregateIndex = new AggregateIndex('user', dynamoDB, indexTable)
   }))
 
   describe('.add()', () => {
@@ -37,7 +36,8 @@ describe('AggregateIndex', () => {
       () => aggregateIndex
         .getAll('email')
         .then(res => {
-          expect(res).toEqual(['17', '18'])
+          expect(res).toContain('17')
+          expect(res).toContain('18')
         })
     )
   })

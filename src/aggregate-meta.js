@@ -1,6 +1,6 @@
-const {AggregateIdType, MaybeAggregateIdType, AggregateVersionType} = require('./types')
-const {Date: DateType, irreducible, maybe} = require('tcomb')
-const MaybeDateType = maybe(DateType)
+const t = require('tcomb')
+const {PositiveInteger} = require('./types')
+const MaybeDateType = t.maybe(t.Date)
 
 class AggregateMeta {
   /**
@@ -9,15 +9,13 @@ class AggregateMeta {
    * @param {Date} createdAt
    * @param {Date|undefined} updatedAt
    * @param {Date|undefined} deletedAt
-   * @param {Number} createdBy
    */
-  constructor (id, version, createdAt = new Date(), updatedAt, deletedAt, createdBy) {
-    this._id = AggregateIdType(id, ['AggregateMeta', 'id:AggregateId'])
-    this._version = AggregateVersionType(version, ['AggregateMeta', 'version:AggregateVersion'])
+  constructor (id, version, createdAt = new Date(), updatedAt, deletedAt) {
+    this._id = t.String(id, ['AggregateMeta', 'id:AggregateId'])
+    this._version = PositiveInteger(version, ['AggregateMeta', 'version:AggregateVersion'])
     this._createdAt = createdAt
     this._updatedAt = MaybeDateType(updatedAt, ['AggregateMeta', 'updatedAt:?Date'])
     this._deletedAt = MaybeDateType(deletedAt, ['AggregateMeta', 'deletedAt:?Date'])
-    this._createdBy = MaybeAggregateIdType(createdBy, ['AggregateMeta', 'createdBy:?AggregateId'])
   }
 
   /**
@@ -56,7 +54,7 @@ class AggregateMeta {
   }
 
   /**
-   * Returns if the aggregate is deleted
+   * Returns if the aggregateName is deleted
    *
    * @returns {Boolean}
    */
@@ -65,7 +63,7 @@ class AggregateMeta {
   }
 
   /**
-   * Returns the timestamp when the aggregate was modified the last time, which is the latest value of
+   * Returns the timestamp when the aggregateName was modified the last time, which is the latest value of
    * createdAt, updatedAt or deletedAt
    *
    * @returns {Date}
@@ -81,20 +79,13 @@ class AggregateMeta {
   }
 
   /**
-   * @returns {Number|undefined}
-   */
-  get createdBy () {
-    return this._createdBy
-  }
-
-  /**
    * Returns an instance of this with updated version and the updatedAt timestamp set
    *
    * @param {Date} updatedAt
    * @returns {AggregateMeta}
    */
   updated (updatedAt = new Date()) {
-    DateType(updatedAt)
+    t.Date(updatedAt)
     return new AggregateMeta(this.id, this.version + 1, this.createdAt, updatedAt)
   }
 
@@ -105,12 +96,12 @@ class AggregateMeta {
    * @returns {AggregateMeta}
    */
   deleted (deletedAt = new Date()) {
-    DateType(deletedAt)
+    t.Date(deletedAt)
     return new AggregateMeta(this.id, this.version + 1, this.createdAt, this.updatedAt, deletedAt)
   }
 }
 
-const AggregateMetaType = irreducible('AggregateMetaType', x => x instanceof AggregateMeta)
+const AggregateMetaType = t.irreducible('AggregateMetaType', x => x instanceof AggregateMeta)
 
 module.exports = {
   AggregateMeta,

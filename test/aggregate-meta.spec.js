@@ -88,14 +88,4 @@ describe('AggregateMeta', () => {
       expect(a.isDeleted).toEqual(true)
     })
   })
-  describe('.createdBy', () => {
-    it('should return id of the creator', () => {
-      const a = new AggregateMeta('17', 1, undefined, undefined, undefined, '42')
-      expect(a.createdBy).toEqual('42')
-    })
-    it('should default to new undefined', () => {
-      const a = new AggregateMeta('17', 1)
-      expect(a.createdBy).toEqual(undefined)
-    })
-  })
 })

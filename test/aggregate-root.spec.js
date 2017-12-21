@@ -8,7 +8,7 @@ const {UnhandledDomainEventError} = require('@rheactorjs/errors')
 describe('AggregateRoot', () => {
   describe('.applyEvent()', () => {
     it('should throw an exception if not implemented', () => {
-      expect(() => AggregateRoot.applyEvent(new ModelEvent('17', 'SomeEvent'))).toThrow(UnhandledDomainEventError)
+      expect(() => AggregateRoot.applyEvent(new ModelEvent('17', 1, 'SomeEvent'))).toThrow(UnhandledDomainEventError)
     })
   })
   describe('.meta', () => {
