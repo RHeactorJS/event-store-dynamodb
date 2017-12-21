@@ -253,7 +253,7 @@ class AggregateIndex {
       })
       .promise()
       .then(({Items, LastEvaluatedKey}) => {
-        items = [...items, ...Items.map(({AggregateIds: {S}}) => S)]
+        items = items.concat(Items.map(({AggregateIds: {S}}) => S))
         if (LastEvaluatedKey) return this.get(indexName, items, LastEvaluatedKey)
         return items
       })

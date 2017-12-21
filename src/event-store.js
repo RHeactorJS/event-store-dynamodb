@@ -81,7 +81,7 @@ class EventStore {
       })
       .promise()
       .then(({Items, LastEvaluatedKey}) => {
-        events = [...events, ...Items]
+        events = events.concat(Items)
         if (LastEvaluatedKey) return fetchEvents(events, LastEvaluatedKey)
         return events
       })
@@ -105,7 +105,7 @@ class EventStore {
       })
       .promise()
       .then(({Items, LastEvaluatedKey}) => {
-        aggregates = [...aggregates, ...Items.map(({AggregateId}) => AggregateId.S)]
+        aggregates = aggregates.concat(Items.map(({AggregateId}) => AggregateId.S))
         if (LastEvaluatedKey) return fetchAggregates(aggregates, LastEvaluatedKey)
         return aggregates
       })
