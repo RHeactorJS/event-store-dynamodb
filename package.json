@@ -8,7 +8,7 @@
     "test:coverage": "jest -i --forceExit --coverage",
     "test:coverage-travis": "npm run test:coverage && codeclimate-test-reporter < ./coverage/lcov.info && rm -rf ./coverage",
     "lint": "standard",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
+    "semantic-release": "semantic-release",
     "precommit": "npm run lint && npm test",
     "commitmsg": "commitlint -e"
   },
@@ -29,6 +29,7 @@
     "@rheactorjs/errors": "^1.0.2",
     "aws-sdk": "^2.172.0",
     "bluebird": "^3.5.1",
+    "semantic-release-cli": "^3.3.0",
     "tcomb": "^3.2.24",
     "uuid": "^3.1.0"
   },
