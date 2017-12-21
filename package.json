@@ -2,10 +2,10 @@
   "name": "@rheactorjs/event-store-dynamodb",
   "description": "Implementation of an event store using DynamoDB",
   "version": "0.0.0-development",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "jest -i --forceExit",
-    "test:coverage": "jest -i --forceExit --coverage",
+    "test": "jest --forceExit",
+    "test:coverage": "jest --forceExit --coverage",
     "test:coverage-travis": "npm run test:coverage && codeclimate-test-reporter < ./coverage/lcov.info && rm -rf ./coverage",
     "lint": "standard",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
@@ -43,7 +43,6 @@
     "standard": "^10.0.3"
   },
   "files": [
-    "dist",
     "src",
     "test",
     "README.md"

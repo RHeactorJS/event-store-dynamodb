@@ -118,17 +118,19 @@ class AggregateIndex {
           }
         },
         UpdateExpression: 'ADD #AggregateIds :AggregateId',
-        ConditionExpression: 'NOT contains(#AggregateIds, :AggregateId)',
+        ConditionExpression: 'NOT contains(#AggregateIds, :AggregateIdString)',
         ExpressionAttributeNames: {
           '#AggregateIds': 'AggregateIds'
         },
         ExpressionAttributeValues: {
-          ':AggregateId': {'SS': [aggregateId]}
-        }
+          ':AggregateId': {'SS': [aggregateId]},
+          ':AggregateIdString': {'S': aggregateId}
+        },
+        ReturnValues: 'UPDATED_NEW'
       })
       .promise()
       .catch(err => {
-        if (err.code === 'ConditionalCheckFailedException') throw new EntryAlreadyExistsError(`"${indexName}" already contains "${aggregateId}"!`)
+        if (err.code === 'ConditionalCheckFailedException') throw new EntryAlreadyExistsError(`Aggregate "${aggregateId}" already member of "${indexName}"!`)
         throw err
       })
   }
@@ -258,33 +260,35 @@ class AggregateIndex {
   }
 
   createTable () {
-    return this.dynamoDB.createTable({
-      TableName: this.tableName,
-      KeySchema: [
-        {
-          AttributeName: 'AggregateIndexName',
-          KeyType: 'HASH'
-        },
-        {
-          AttributeName: 'IndexKey',
-          KeyType: 'RANGE'
+    return this.dynamoDB
+      .createTable({
+        TableName: this.tableName,
+        KeySchema: [
+          {
+            AttributeName: 'AggregateIndexName',
+            KeyType: 'HASH'
+          },
+          {
+            AttributeName: 'IndexKey',
+            KeyType: 'RANGE'
+          }
+        ],
+        AttributeDefinitions: [
+          {
+            AttributeName: 'AggregateIndexName',
+            AttributeType: 'S'
+          },
+          {
+            AttributeName: 'IndexKey',
+            AttributeType: 'S'
+          }
+        ],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 1,
+          WriteCapacityUnits: 1
         }
-      ],
-      AttributeDefinitions: [
-        {
-          AttributeName: 'AggregateIndexName',
-          AttributeType: 'S'
-        },
-        {
-          AttributeName: 'IndexKey',
-          AttributeType: 'S'
-        }
-      ],
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 1,
-        WriteCapacityUnits: 1
-      }
-    }).promise()
+      })
+      .promise()
   }
 }
 

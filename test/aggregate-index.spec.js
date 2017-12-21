@@ -7,13 +7,13 @@ const {close, dynamoDB} = require('./helper')
 const {EntryAlreadyExistsError} = require('@rheactorjs/errors')
 
 describe('AggregateIndex', () => {
-  afterAll(close)
-
   let aggregateIndex
 
   beforeAll(() => dynamoDB().spread((dynamoDB, eventsTable, relationsTable, indexTable) => {
     aggregateIndex = new AggregateIndex('user', dynamoDB, indexTable)
   }))
+
+  afterAll(close)
 
   describe('.add()', () => {
     it(
@@ -73,13 +73,14 @@ describe('AggregateIndex', () => {
       'should add a value to the list if it is not present',
       () => aggregateIndex.addToListIfNotPresent('meeting-users:42', '17')
     )
-    it(
-      'should not add the value to the list if it is present',
-      () => aggregateIndex.addToListIfNotPresent('meeting-users:42', '17')
+    it('should not add the value to the list if it is present', () => {
+      expect.assertions(1)
+      return aggregateIndex
+        .addToListIfNotPresent('meeting-users:42', '17')
         .catch(EntryAlreadyExistsError, err => {
-          expect(err.message).toEqual('Aggregate "17" already member of "user.meeting-users:42.list".')
+          expect(err.message).toEqual('Aggregate "17" already member of "meeting-users:42"!')
         })
-    )
+    })
   })
 
   describe('.getList()', () => {

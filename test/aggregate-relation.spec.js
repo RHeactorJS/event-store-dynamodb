@@ -1,11 +1,11 @@
-/* global describe it beforeAll expect */
+/* global describe it beforeAll afterAll expect */
 
 const {AggregateRelation} = require('../src/aggregate-relation')
 const {EventStore} = require('../src/event-store')
 const {AggregateRepository} = require('../src/aggregate-repository')
 const {Promise} = require('bluebird')
 const {DummyModel} = require('./dummy-model')
-const {dynamoDB} = require('./helper')
+const {dynamoDB, close} = require('./helper')
 
 describe('AggregateRelation', function () {
   let repository, relation
@@ -18,6 +18,8 @@ describe('AggregateRelation', function () {
       )
       relation = new AggregateRelation(dynamoDB, relationsTable)
     }))
+
+  afterAll(close)
 
   it('should add items', () => Promise
     .join(repository.add({email: 'josh.doe@example.invalid'}), repository.add({email: 'jasper.doe@example.invalid'}))

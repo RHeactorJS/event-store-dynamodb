@@ -1,11 +1,11 @@
-/* global describe it beforeAll expect */
+/* global describe it beforeAll afterAll expect */
 
 const {AggregateRepository, AggregateRoot, AggregateMeta, AggregateMetaType, EventStore} = require('../src')
 const {Promise} = require('bluebird')
 
 const {ModelEvent} = require('../src/model-event')
 const {EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError} = require('@rheactorjs/errors')
-const {dynamoDB} = require('./helper')
+const {dynamoDB, close} = require('./helper')
 
 class DummyModel extends AggregateRoot {
   constructor (email, meta) {
@@ -40,6 +40,8 @@ describe('AggregateRepository', function () {
         DummyModel,
         new EventStore('Dummy', dynamoDB, eventsTable))
     }))
+
+  afterAll(close)
 
   describe('.add()', () => {
     it('should add entities', () => {

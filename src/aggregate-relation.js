@@ -114,33 +114,35 @@ class AggregateRelation {
   }
 
   createTable () {
-    return this.dynamoDB.createTable({
-      TableName: this.tableName,
-      KeySchema: [
-        {
-          AttributeName: 'AggregateRelation',
-          KeyType: 'HASH'
-        },
-        {
-          AttributeName: 'RelatedId',
-          KeyType: 'RANGE'
+    return this.dynamoDB
+      .createTable({
+        TableName: this.tableName,
+        KeySchema: [
+          {
+            AttributeName: 'AggregateRelation',
+            KeyType: 'HASH'
+          },
+          {
+            AttributeName: 'RelatedId',
+            KeyType: 'RANGE'
+          }
+        ],
+        AttributeDefinitions: [
+          {
+            AttributeName: 'AggregateRelation',
+            AttributeType: 'S'
+          },
+          {
+            AttributeName: 'RelatedId',
+            AttributeType: 'S'
+          }
+        ],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 1,
+          WriteCapacityUnits: 1
         }
-      ],
-      AttributeDefinitions: [
-        {
-          AttributeName: 'AggregateRelation',
-          AttributeType: 'S'
-        },
-        {
-          AttributeName: 'RelatedId',
-          AttributeType: 'S'
-        }
-      ],
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 1,
-        WriteCapacityUnits: 1
-      }
-    }).promise()
+      })
+      .promise()
   }
 }
 

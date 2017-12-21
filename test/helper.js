@@ -1,4 +1,4 @@
-const {DynamoDB, Credentials} = require('aws-sdk')
+const {DynamoDB} = require('aws-sdk')
 const {EventStore} = require('../src/event-store')
 const {AggregateRelation} = require('../src/aggregate-relation')
 const {AggregateIndex} = require('../src/aggregate-index')
@@ -7,38 +7,30 @@ const AWS = require('aws-sdk')
 const Promise = require('bluebird')
 AWS.config.setPromisesDependency(Promise)
 
-let db = false
-
-const up = () => {
-  if (!db) {
-    db = new Promise(resolve => {
-      dinossauro.up()
-        .then(() => {
-          const p = {
-            endpoint: 'http://localhost:8000',
-            apiVersion: '2012-08-10',
-            region: 'us-east-1'
-          }
-          const d = new DynamoDB(p)
-          const eventsTable = `events-${Date.now()}`
-          const relationsTable = `relations-${Date.now()}`
-          const indexTable = `indexes-${Date.now()}`
-          const s = new EventStore('foo', d, eventsTable)
-          const r = new AggregateRelation(d, relationsTable)
-          const i = new AggregateIndex('foo', d, indexTable)
-          return Promise.join(
-            s.createTable(),
-            r.createTable(),
-            i.createTable()
-          ).then(() => resolve([d, eventsTable, relationsTable, indexTable]))
-        })
-        .catch(err => {
-          console.error(err)
-        })
-    })
-  }
-  return db
-}
+const up = () => Promise
+  .try(dinossauro.up)
+  .then(() => {
+    const p = {
+      endpoint: 'http://localhost:8000',
+      region: 'us-west-2',
+      accessKeyId: 'foo',
+      secretAccessKey: 'bar'
+    }
+    const d = new DynamoDB(p)
+    const eventsTable = `events-${Date.now()}`
+    const relationsTable = `relations-${Date.now()}`
+    const indexTable = `indexes-${Date.now()}`
+    const s = new EventStore('foo', d, eventsTable)
+    const r = new AggregateRelation(d, relationsTable)
+    const i = new AggregateIndex('foo', d, indexTable)
+    return Promise
+      .join(
+        s.createTable(),
+        r.createTable(),
+        i.createTable()
+      )
+      .then(() => [d, eventsTable, relationsTable, indexTable])
+  })
 
 const close = dinossauro.down
 

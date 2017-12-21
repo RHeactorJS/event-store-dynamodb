@@ -1,9 +1,9 @@
-/* global describe it beforeAll expect */
+/* global describe it beforeAll afterAll expect */
 
 const {EventStore} = require('../src/event-store')
 const {ModelEvent} = require('../src/model-event')
 const {Promise} = require('bluebird')
-const {dynamoDB} = require('./helper')
+const {dynamoDB, close} = require('./helper')
 
 describe('EventStore', function () {
   let eventStore
@@ -12,6 +12,8 @@ describe('EventStore', function () {
     .spread((dynamoDB, eventsTable) => {
       eventStore = new EventStore('user', dynamoDB, eventsTable)
     }))
+
+  afterAll(close)
 
   describe('persist()', () => {
     it('should store an event', () => {

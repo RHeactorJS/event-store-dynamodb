@@ -1,4 +1,4 @@
-/* global describe it beforeAll expect */
+/* global describe it beforeAll afterAll expect */
 
 const {EventStore} = require('../src/event-store')
 const {ModelEvent} = require('../src/model-event')
@@ -8,7 +8,7 @@ const {Promise} = require('bluebird')
 
 const {AggregateRoot} = require('../src/aggregate-root')
 const {AggregateMeta} = require('../src/aggregate-meta')
-const {dynamoDB} = require('./helper')
+const {dynamoDB, close} = require('./helper')
 
 class DummyModel extends AggregateRoot {
   /**
@@ -37,6 +37,8 @@ describe('SnapshotAggregateRepository', () => {
         eventStore
       ))
     }))
+
+  afterAll(close)
 
   describe('getById().until()', () => {
     it('should aggregateName only to a given date', () => {

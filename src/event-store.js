@@ -117,56 +117,58 @@ class EventStore {
   }
 
   createTable () {
-    return this.dynamoDB.createTable({
-      TableName: this.tableName,
-      KeySchema: [
-        {
-          AttributeName: 'Id',
-          KeyType: 'HASH'
-        },
-        {
-          AttributeName: 'Version',
-          KeyType: 'RANGE'
-        }
-      ],
-      AttributeDefinitions: [
-        {
-          AttributeName: 'Id',
-          AttributeType: 'S'
-        },
-        {
-          AttributeName: 'Version',
-          AttributeType: 'N'
-        },
-        {
-          AttributeName: 'AggregateName',
-          AttributeType: 'S'
-        }
-      ],
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 1,
-        WriteCapacityUnits: 1
-      },
-      GlobalSecondaryIndexes: [
-        {
-          IndexName: 'Aggregate-index',
-          KeySchema: [
-            {
-              AttributeName: 'AggregateName',
-              KeyType: 'HASH'
-            }
-          ],
-          Projection: {
-            ProjectionType: 'INCLUDE',
-            NonKeyAttributes: ['AggregateId']
+    return this.dynamoDB
+      .createTable({
+        TableName: this.tableName,
+        KeySchema: [
+          {
+            AttributeName: 'Id',
+            KeyType: 'HASH'
           },
-          ProvisionedThroughput: {
-            ReadCapacityUnits: 1,
-            WriteCapacityUnits: 1
+          {
+            AttributeName: 'Version',
+            KeyType: 'RANGE'
           }
-        }
-      ]
-    }).promise()
+        ],
+        AttributeDefinitions: [
+          {
+            AttributeName: 'Id',
+            AttributeType: 'S'
+          },
+          {
+            AttributeName: 'Version',
+            AttributeType: 'N'
+          },
+          {
+            AttributeName: 'AggregateName',
+            AttributeType: 'S'
+          }
+        ],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 1,
+          WriteCapacityUnits: 1
+        },
+        GlobalSecondaryIndexes: [
+          {
+            IndexName: 'Aggregate-index',
+            KeySchema: [
+              {
+                AttributeName: 'AggregateName',
+                KeyType: 'HASH'
+              }
+            ],
+            Projection: {
+              ProjectionType: 'INCLUDE',
+              NonKeyAttributes: ['AggregateId']
+            },
+            ProvisionedThroughput: {
+              ReadCapacityUnits: 1,
+              WriteCapacityUnits: 1
+            }
+          }
+        ]
+      })
+      .promise()
   }
 }
 
