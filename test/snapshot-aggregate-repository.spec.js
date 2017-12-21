@@ -1,16 +1,16 @@
 /* global describe it beforeAll expect */
 
-import { EventStore } from '../src/event-store'
-import { ModelEvent } from '../src/model-event'
-import { ImmutableAggregateRepository } from '../src/immutable-aggregate-repository'
-import { SnapshotAggregateRepository } from '../src/snapshot-aggregate-repository'
-import { Promise } from 'bluebird'
-import helper from './helper'
+const { EventStore } = require('../src/event-store')
+const { ModelEvent } = require('../src/model-event')
+const { AggregateRepository } = require('../src/aggregate-repository')
+const { SnapshotAggregateRepository } = require('../src/snapshot-aggregate-repository')
+const { Promise } = require('bluebird')
 
-import { ImmutableAggregateRoot } from '../src/immutable-aggregate-root'
-import { AggregateMeta } from '../src/aggregate-meta'
+const { AggregateRoot } = require('../src/aggregate-root')
+const { AggregateMeta } = require('../src/aggregate-meta')
+const {clearDb, dynamoDB} = require('./helper')
 
-class DummyModel extends ImmutableAggregateRoot {
+class DummyModel extends AggregateRoot {
   /**
    * Applies the event
    *
@@ -26,19 +26,19 @@ class DummyModel extends ImmutableAggregateRoot {
 }
 
 describe('SnapshotAggregateRepository', () => {
-  beforeAll(helper.clearDb)
+  beforeAll(clearDb)
 
   let snapshotRepo
   let eventStore
 
-  beforeAll(() => helper.redis()
-    .then(client => {
-      snapshotRepo = new SnapshotAggregateRepository(new ImmutableAggregateRepository(
+  beforeAll(() => dynamoDB()
+    .then(dynamoDB => {
+      snapshotRepo = new SnapshotAggregateRepository(new AggregateRepository(
         DummyModel,
         'user',
-        client
+        dynamoDB
       ))
-      eventStore = new EventStore('user', client, 1)
+      eventStore = new EventStore('user', dynamoDB, 1)
     }))
 
   describe('getById().until()', () => {

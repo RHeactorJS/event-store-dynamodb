@@ -1,7 +1,7 @@
-import {list, String as StringType, irreducible, Object as ObjectType, Date as DateType} from 'tcomb'
-import {MaybeStringType, AggregateIdType} from './types'
+const {list, String: StringType, irreducible, Object: ObjectType, Date: DateType} = require('tcomb')
+const {MaybeStringType, AggregateIdType} = require('./types')
 
-export class ModelEvent {
+class ModelEvent {
   /**
    * If a model is modified the modifying method should return and instance of this
    * event that represents the change
@@ -26,5 +26,7 @@ export class ModelEvent {
   }
 }
 
-export const ModelEventType = irreducible('ModelEventType', x => x instanceof ModelEvent)
-export const ModelEventTypeList = list(ModelEventType)
+const ModelEventType = irreducible('ModelEventType', x => x instanceof ModelEvent)
+const ModelEventTypeList = list(ModelEventType)
+
+module.exports = {ModelEvent, ModelEventType, ModelEventTypeList}

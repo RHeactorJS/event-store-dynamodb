@@ -1,6 +1,6 @@
 /* global describe it expect */
 
-import {AggregateMeta} from '../src'
+const {AggregateMeta} = require('../src')
 
 describe('AggregateMeta', () => {
   describe('constructur', () => {

@@ -1,10 +1,10 @@
-import {ImmutableAggregateRepositoryType} from './immutable-aggregate-repository'
-import {AggregateIdType} from './types'
-import {Date as DateType} from 'tcomb'
+const {AggregateRepositoryType} = require('./aggregate-repository')
+const {AggregateIdType} = require('./types')
+const {Date: DateType} = require('tcomb')
 
-export class SnapshotAggregateRepository {
+class SnapshotAggregateRepository {
   constructor (repo) {
-    this.repo = ImmutableAggregateRepositoryType(repo, ['SnapshotAggregateRepository()', 'repo:ImmutableAggregateRepository'])
+    this.repo = AggregateRepositoryType(repo, ['SnapshotAggregateRepository()', 'repo:AggregateRepository'])
   }
 
   /**
@@ -24,3 +24,5 @@ export class SnapshotAggregateRepository {
     }
   }
 }
+
+module.exports = {SnapshotAggregateRepository}

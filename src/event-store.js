@@ -1,9 +1,9 @@
-import {Promise} from 'bluebird'
-import {ModelEvent, ModelEventType} from './model-event'
-import {AggregateIdType, PositiveIntegerType} from './types'
-import {String as StringType, Object as ObjectType} from 'tcomb'
+const {Promise} = require('bluebird')
+const {ModelEvent, ModelEventType} = require('./model-event')
+const {AggregateIdType, PositiveIntegerType} = require('./types')
+const {String: StringType, Object: ObjectType} = require('tcomb')
 
-export class EventStore {
+class EventStore {
   /**
    * Creates a new EventStore for the given aggregate, e.g. 'user'.
    *
@@ -11,22 +11,22 @@ export class EventStore {
    * version id.
    *
    * @param {String} aggregate
-   * @param {redis.client} redis
+   * @param {DynamoDB} dynamoDB
    * @param {Number} numEvents
    */
-  constructor (aggregate, redis, numEvents = 100) {
+  constructor (aggregate, dynamoDB, numEvents = 100) {
     StringType(aggregate)
-    ObjectType(redis)
+    ObjectType(dynamoDB)
     PositiveIntegerType(numEvents)
     this.aggregate = aggregate
-    this.redis = redis
+    this.dynamoDB = dynamoDB
     this.numEvents = numEvents
   }
 
   /**
    * Persists an event
    *
-   * The redis list type guarantees the order of insertion. So we don't need to jump through hoops to manage a version
+   * The dynamoDB list type guarantees the order of insertion. So we don't need to jump through hoops to manage a version
    * id per aggregate. This can simply be done in the fetch method.
    *
    * @param {ModelEvent} event
@@ -43,7 +43,7 @@ export class EventStore {
     if (event.createdBy) {
       data.eventCreatedBy = event.createdBy
     }
-    return Promise.resolve(this.redis.rpushAsync(aggregateEvents, JSON.stringify(data)))
+    return Promise.resolve(this.dynamoDB.rpushAsync(aggregateEvents, JSON.stringify(data)))
   }
 
   /**
@@ -59,7 +59,7 @@ export class EventStore {
     let fetchedEvents = []
     let fetchEvents = start => {
       return Promise
-        .resolve(this.redis.lrangeAsync(aggregateEvents, start, start + this.numEvents - 1))
+        .resolve(this.dynamoDB.lrangeAsync(aggregateEvents, start, start + this.numEvents - 1))
         .then((res) => {
           return Promise
             .map(res, (e) => {
@@ -82,3 +82,5 @@ export class EventStore {
       })
   }
 }
+
+module.exports = {EventStore}

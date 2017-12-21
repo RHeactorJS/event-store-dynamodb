@@ -1,9 +1,11 @@
-export * from './aggregate-index'
-export * from './aggregate-meta'
-export * from './aggregate-relation'
-export * from './snapshot-aggregate-repository'
-export * from './immutable-aggregate-root'
-export * from './immutable-aggregate-repository'
-export * from './event-store'
-export * from './model-event'
-export * from './types'
+module.exports = {
+  ...require('./aggregate-index'),
+  ...require('./aggregate-meta'),
+  ...require('./aggregate-relation'),
+  ...require('./snapshot-aggregate-repository'),
+  ...require('./aggregate-root'),
+  ...require('./aggregate-repository'),
+  ...require('./event-store'),
+  ...require('./model-event'),
+  ...require('./types')
+}

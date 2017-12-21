@@ -1,19 +1,19 @@
 /* global describe it beforeAll afterAll expect */
 
-import { AggregateIndex } from '../src/aggregate-index'
-import { Promise } from 'bluebird'
-import helper from './helper'
+const {AggregateIndex} = require('../src/aggregate-index')
+const {Promise} = require('bluebird')
+const {clearDb, close, dynamoDB} = require('./helper')
 
-import { EntryAlreadyExistsError } from '@rheactorjs/errors'
+const {EntryAlreadyExistsError} = require('@rheactorjs/errors')
 
 describe('AggregateIndex', () => {
-  beforeAll(helper.clearDb)
-  afterAll(helper.close)
+  beforeAll(clearDb)
+  afterAll(close)
 
   let aggregateIndex
 
-  beforeAll(() => helper.redis().then(client => {
-    aggregateIndex = new AggregateIndex('user', client)
+  beforeAll(() => dynamoDB().then(dynamoDB => {
+    aggregateIndex = new AggregateIndex('user', dynamoDB)
   }))
 
   describe('.add()', () => {

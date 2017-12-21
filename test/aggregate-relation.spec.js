@@ -1,24 +1,24 @@
 /* global describe it beforeAll expect */
 
-import { AggregateRelation } from '../src/aggregate-relation'
-import { ImmutableAggregateRepository } from '../src/immutable-aggregate-repository'
-import { Promise } from 'bluebird'
-import helper from './helper'
-import { DummyModel } from './dummy-model'
+const {AggregateRelation} = require('../src/aggregate-relation')
+const {AggregateRepository} = require('../src/aggregate-repository')
+const {Promise} = require('bluebird')
+const {DummyModel} = require('./dummy-model')
+const {clearDb, dynamoDB} = require('./helper')
 
 describe('AggregateRelation', function () {
-  beforeAll(helper.clearDb)
+  beforeAll(clearDb)
 
   let repository, relation
 
-  beforeAll(() => helper.redis()
-    .then(client => {
-      repository = new ImmutableAggregateRepository(
+  beforeAll(() => dynamoDB()
+    .then(dynamoDB => {
+      repository = new AggregateRepository(
         DummyModel,
         'dummy',
-        client
+        dynamoDB
       )
-      relation = new AggregateRelation(repository, client)
+      relation = new AggregateRelation(repository, dynamoDB)
     }))
 
   it('should add items', () => Promise
@@ -58,7 +58,7 @@ describe('AggregateRelation', function () {
 
   it('should honor repository alias', (done) => {
     const relation = new AggregateRelation({alias: 'foo'})
-    relation.redis = {
+    relation.dynamoDB = {
       saddAsync: (key, id) => {
         expect(key).toEqual('foo:acme:42')
         expect(id).toEqual('17')

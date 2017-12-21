@@ -1,8 +1,8 @@
-import {ImmutableAggregateRoot} from '../src/immutable-aggregate-root'
-import {UnhandledDomainEventError} from '@rheactorjs/errors'
-import {AggregateMeta} from '../src/aggregate-meta'
+const {AggregateRoot} = require('../src/aggregate-root')
+const {UnhandledDomainEventError} = require('@rheactorjs/errors')
+const {AggregateMeta} = require('../src/aggregate-meta')
 
-export class DummyModel extends ImmutableAggregateRoot {
+class DummyModel extends AggregateRoot {
   /**
    * @param {string} email
    * @param {AggregateMeta} meta
@@ -31,3 +31,5 @@ export class DummyModel extends ImmutableAggregateRoot {
     }
   }
 }
+
+module.exports = {DummyModel}

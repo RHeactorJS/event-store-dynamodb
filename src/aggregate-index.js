@@ -1,15 +1,15 @@
-import {EntryAlreadyExistsError, EntryNotFoundError} from '@rheactorjs/errors'
+const {EntryAlreadyExistsError, EntryNotFoundError} = require('@rheactorjs/errors')
 
-export class AggregateIndex {
+class AggregateIndex {
   /**
    * Manages indices for aggregates
    *
    * @param {String} aggregate
-   * @param {redis.client} redis
+   * @param {DynamoDB} dynamoDB
    */
-  constructor (aggregate, redis) {
+  constructor (aggregate, dynamoDB) {
     this.aggregate = aggregate
-    this.redis = redis
+    this.dynamoDB = dynamoDB
   }
 
   /**
@@ -21,7 +21,7 @@ export class AggregateIndex {
    * @returns {Promise}
    */
   add (type, value, aggregateId) {
-    return this.redis.hmsetAsync(this.aggregate + '.' + type + '.index', value, aggregateId)
+    return this.dynamoDB.hmsetAsync(this.aggregate + '.' + type + '.index', value, aggregateId)
   }
 
   /**
@@ -36,8 +36,8 @@ export class AggregateIndex {
    */
   addIfNotPresent (type, value, aggregateId) {
     let index = this.aggregate + '.' + type + '.index'
-    return this.redis.evalAsync(
-      'local v = redis.call(\'HMGET\',ARGV[1],ARGV[2]) if v[1] == false then redis.call(\'HMSET\',ARGV[1],ARGV[2],ARGV[3]) return true else return false end',
+    return this.dynamoDB.evalAsync(
+      'local v = dynamoDB.call(\'HMGET\',ARGV[1],ARGV[2]) if v[1] == false then dynamoDB.call(\'HMSET\',ARGV[1],ARGV[2],ARGV[3]) return true else return false end',
       0, index, value, aggregateId
     )
       .then((res) => {
@@ -59,7 +59,7 @@ export class AggregateIndex {
    */
   remove (type, value, aggregateId) {
     let index = this.aggregate + '.' + type + '.index'
-    return this.redis.hdelAsync(index, value, aggregateId)
+    return this.dynamoDB.hdelAsync(index, value, aggregateId)
   }
 
   /**
@@ -73,7 +73,7 @@ export class AggregateIndex {
    */
   addToListIfNotPresent (type, aggregateId) {
     let index = this.aggregate + '.' + type + '.list'
-    return this.redis.saddAsync(index, aggregateId)
+    return this.dynamoDB.saddAsync(index, aggregateId)
       .then((res) => {
         if (!res) {
           throw new EntryAlreadyExistsError('Aggregate "' + aggregateId + '" already member of "' + index + '".')
@@ -90,7 +90,7 @@ export class AggregateIndex {
    */
   getList (type) {
     let index = this.aggregate + '.' + type + '.list'
-    return this.redis.smembersAsync(index)
+    return this.dynamoDB.smembersAsync(index)
   }
 
   /**
@@ -103,7 +103,7 @@ export class AggregateIndex {
    */
   removeFromList (type, aggregateId) {
     let index = this.aggregate + '.' + type + '.list'
-    return this.redis.sremAsync(index, aggregateId)
+    return this.dynamoDB.sremAsync(index, aggregateId)
   }
 
   /**
@@ -129,7 +129,7 @@ export class AggregateIndex {
    * @throws EntryNotFoundError
    */
   get (type, value) {
-    return this.redis
+    return this.dynamoDB
       .hmgetAsync(this.aggregate + '.' + type + '.index', value)
       .then((res) => {
         if (res[0] === null) {
@@ -146,7 +146,9 @@ export class AggregateIndex {
    * @returns {Promise}
    */
   getAll (type) {
-    return this.redis
+    return this.dynamoDB
       .hvalsAsync(this.aggregate + '.' + type + '.index')
   }
 }
+
+module.exports = {AggregateIndex}

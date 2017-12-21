@@ -1,26 +1,26 @@
-import {EventStore} from './event-store'
-import {ModelEvent, ModelEventType} from './model-event'
-import {EntryNotFoundError, EntryDeletedError} from '@rheactorjs/errors'
-import {Promise} from 'bluebird'
-import {MaybeStringType, AggregateIdType} from './types'
-import {irreducible, String as StringType, Function as FunctionType, Object as ObjectType} from 'tcomb'
+const {EventStore} = require('./event-store')
+const {ModelEvent, ModelEventType} = require('./model-event')
+const {EntryNotFoundError, EntryDeletedError} = require('@rheactorjs/errors')
+const {Promise} = require('bluebird')
+const {MaybeStringType, AggregateIdType} = require('./types')
+const {irreducible, String: StringType, Function: FunctionType, Object: ObjectType} = require('tcomb')
 
-export class ImmutableAggregateRepository {
+class AggregateRepository {
   /**
    * Creates a new aggregate repository
    *
-   * @param {ImmutableAggregateRoot} {applyEvent: {Function}}
+   * @param {AggregateRoot} {applyEvent: {Function}}
    * @param {String} alias
-   * @param {redis.client} redis
+   * @param {DynamoDB} dynamoDB
    */
-  constructor ({applyEvent}, alias, redis) {
-    FunctionType(applyEvent, ['ImmutableAggregateRepository', 'root:ImmutableAggregateRoot'])
-    StringType(alias, ['ImmutableAggregateRepository', 'alias:String'])
+  constructor ({applyEvent}, alias, dynamoDB) {
+    FunctionType(applyEvent, ['AggregateRepository', 'root:AggregateRoot'])
+    StringType(alias, ['AggregateRepository', 'alias:String'])
     this.applyEvent = applyEvent
     this.alias = alias
     this.prefix = alias.charAt(0).toUpperCase() + alias.slice(1)
-    this.eventStore = new EventStore(alias, redis)
-    this.redis = redis
+    this.eventStore = new EventStore(alias, dynamoDB)
+    this.dynamoDB = dynamoDB
   }
 
   /**
@@ -34,9 +34,9 @@ export class ImmutableAggregateRepository {
    * @returns {Promise.<ModelEvent>}
    */
   add (data, createdBy) {
-    ObjectType(data, ['ImmutableAggregateRepository', 'add()', 'data:Object'])
-    MaybeStringType(createdBy, ['ImmutableAggregateRepository', 'add()', 'createdBy:?String'])
-    return this.redis.incrAsync(this.alias + ':id')
+    ObjectType(data, ['AggregateRepository', 'add()', 'data:Object'])
+    MaybeStringType(createdBy, ['AggregateRepository', 'add()', 'createdBy:?String'])
+    return this.dynamoDB.incrAsync(this.alias + ':id')
       .then((id) => this.persistEvent(new ModelEvent('' + id, this.prefix + 'CreatedEvent', data, new Date(), createdBy)))
   }
 
@@ -47,7 +47,7 @@ export class ImmutableAggregateRepository {
    * @return {Promise.<ModelEvent>}
    */
   persistEvent (modelEvent) {
-    ModelEventType(modelEvent, ['ImmutableAggregateRepository', 'persistEvent()', 'modelEvent:ModelEvent'])
+    ModelEventType(modelEvent, ['AggregateRepository', 'persistEvent()', 'modelEvent:ModelEvent'])
     return this.eventStore.persist(modelEvent).then(() => modelEvent)
   }
 
@@ -59,8 +59,8 @@ export class ImmutableAggregateRepository {
    * @returns {Promise.<ModelEvent>}
    */
   remove (id, createdBy) {
-    AggregateIdType(id, ['ImmutableAggregateRepository', 'remove()', 'id:AggregateId'])
-    MaybeStringType(createdBy, ['ImmutableAggregateRepository', 'remove()', 'createdBy:?String'])
+    AggregateIdType(id, ['AggregateRepository', 'remove()', 'id:AggregateId'])
+    MaybeStringType(createdBy, ['AggregateRepository', 'remove()', 'createdBy:?String'])
     return this.persistEvent(new ModelEvent(id, this.prefix + 'DeletedEvent', {}, new Date(), createdBy))
   }
 
@@ -71,7 +71,7 @@ export class ImmutableAggregateRepository {
    * @returns {Promise.<AggregateRoot>} or undefined if not found
    */
   findById (id) {
-    AggregateIdType(id, ['ImmutableAggregateRepository', 'findById()', 'id:AggregateId'])
+    AggregateIdType(id, ['AggregateRepository', 'findById()', 'id:AggregateId'])
     return this.eventStore.fetch(id)
       .reduce((aggregate, event) => this.applyEvent(event, aggregate === false ? undefined : aggregate), false)
       .then(aggregate => {
@@ -89,7 +89,7 @@ export class ImmutableAggregateRepository {
    * @returns {Promise.<Array.<AggregateRoot>>}
    */
   findAll () {
-    return this.redis.getAsync(this.alias + ':id')
+    return this.dynamoDB.getAsync(this.alias + ':id')
       .then((maxId) => {
         let promises = []
         for (let i = 1; i <= maxId; i++) {
@@ -110,7 +110,7 @@ export class ImmutableAggregateRepository {
    * @throws {EntryNotFoundError} if entity is not found
    */
   getById (id) {
-    AggregateIdType(id, ['ImmutableAggregateRepository', 'getById()', 'id:AggregateId'])
+    AggregateIdType(id, ['AggregateRepository', 'getById()', 'id:AggregateId'])
     return this.eventStore.fetch(id)
       .reduce((aggregate, event) => this.applyEvent(event, aggregate === false ? undefined : aggregate), false)
       .then(aggregate => {
@@ -125,4 +125,6 @@ export class ImmutableAggregateRepository {
   }
 }
 
-export const ImmutableAggregateRepositoryType = irreducible('ImmutableAggregateRepositoryType', x => x instanceof ImmutableAggregateRepository)
+const AggregateRepositoryType = irreducible('AggregateRepositoryType', x => x instanceof AggregateRepository)
+
+module.exports = {AggregateRepository, AggregateRepositoryType}

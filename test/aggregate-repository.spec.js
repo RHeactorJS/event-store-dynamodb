@@ -1,13 +1,13 @@
 /* global describe it beforeAll expect */
 
-import { ImmutableAggregateRepository, ImmutableAggregateRoot, AggregateMeta, AggregateMetaType } from '../src'
-import { Promise } from 'bluebird'
-import helper from './helper'
+const {AggregateRepository, AggregateRoot, AggregateMeta, AggregateMetaType} = require('../src')
+const {Promise} = require('bluebird')
 
-import { ModelEvent } from '../src/model-event'
-import { EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError } from '@rheactorjs/errors'
+const {ModelEvent} = require('../src/model-event')
+const {EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError} = require('@rheactorjs/errors')
+const {clearDb, dynamoDB} = require('./helper')
 
-class DummyModel extends ImmutableAggregateRoot {
+class DummyModel extends AggregateRoot {
   constructor (email, meta) {
     AggregateMetaType(meta, ['DummyModel', 'meta:AggregateMeta'])
     super(meta)
@@ -16,8 +16,8 @@ class DummyModel extends ImmutableAggregateRoot {
 
   /**
    * @param {ModelEvent} event
-   * @param {ImmutableAggregateRoot|undefined} aggregate
-   * @return {ImmutableAggregateRoot}
+   * @param {AggregateRoot|undefined} aggregate
+   * @return {AggregateRoot}
    */
   static applyEvent (event, aggregate) {
     switch (event.name) {
@@ -31,17 +31,17 @@ class DummyModel extends ImmutableAggregateRoot {
   }
 }
 
-describe('ImmutableAggregateRepository', function () {
-  beforeAll(helper.clearDb)
+describe('AggregateRepository', function () {
+  beforeAll(clearDb)
 
   let repository
 
-  beforeAll(() => helper.redis()
-    .then(client => {
-      repository = new ImmutableAggregateRepository(
+  beforeAll(() => dynamoDB()
+    .then(dynamoDB => {
+      repository = new AggregateRepository(
         DummyModel,
         'dummy',
-        client
+        dynamoDB
       )
     }))
 

@@ -1,8 +1,8 @@
-import {AggregateIdType, MaybeAggregateIdType, AggregateVersionType} from './types'
-import {Date as DateType, irreducible, maybe} from 'tcomb'
+const {AggregateIdType, MaybeAggregateIdType, AggregateVersionType} = require('./types')
+const {Date: DateType, irreducible, maybe} = require('tcomb')
 const MaybeDateType = maybe(DateType)
 
-export class AggregateMeta {
+class AggregateMeta {
   /**
    * @param {String} id
    * @param {Number} version
@@ -110,4 +110,9 @@ export class AggregateMeta {
   }
 }
 
-export const AggregateMetaType = irreducible('AggregateMetaType', x => x instanceof AggregateMeta)
+const AggregateMetaType = irreducible('AggregateMetaType', x => x instanceof AggregateMeta)
+
+module.exports = {
+  AggregateMeta,
+  AggregateMetaType
+}

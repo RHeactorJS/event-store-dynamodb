@@ -1,18 +1,18 @@
 /* global describe it beforeAll expect */
 
-import { EventStore } from '../src/event-store'
-import { ModelEvent } from '../src/model-event'
-import { Promise } from 'bluebird'
-import helper from './helper'
+const {EventStore} = require('../src/event-store')
+const {ModelEvent} = require('../src/model-event')
+const {Promise} = require('bluebird')
+const {clearDb, dynamoDB} = require('./helper')
 
 describe('EventStore', function () {
-  beforeAll(helper.clearDb)
+  beforeAll(clearDb)
 
   let eventStore
 
-  beforeAll(() => helper.redis()
-    .then(client => {
-      eventStore = new EventStore('user', client, 1)
+  beforeAll(() => dynamoDB()
+    .then(dynamoDB => {
+      eventStore = new EventStore('user', dynamoDB, 1)
     }))
 
   it('should store an event', () => {
@@ -42,8 +42,8 @@ describe('EventStore', function () {
 
   it('should store handle events without a created date', () => {
     let d1 = new Date('1970-01-01T00:00:00+00:00')
-    return helper.redis()
-      .then(client => Promise.resolve(client.rpushAsync('user.events.42', JSON.stringify({eventType: 'SomeEventWithOutCreatedDate'})))
+    return dynamoDB()
+      .then(dynamoDB => Promise.resolve(dynamoDB.rpushAsync('user.events.42', JSON.stringify({eventType: 'SomeEventWithOutCreatedDate'})))
         .then(() => eventStore.fetch('42'))
         .then((res) => {
           expect(res.length).toEqual(1)

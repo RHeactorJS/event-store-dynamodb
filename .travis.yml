@@ -4,8 +4,6 @@ cache:
     - node_modules
 notifications:
   email: false
-services:
-  - redis-server
 before_install:
   - npm install -g npm@5
   - npm install -g greenkeeper-lockfile@1

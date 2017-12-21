@@ -1,16 +1,16 @@
-import {AggregateIdType} from './types'
-import {String as StringType} from 'tcomb'
+const {AggregateIdType} = require('./types')
+const {String: StringType} = require('tcomb')
 
-export class AggregateRelation {
+class AggregateRelation {
   /**
    * Manages relations for aggregates
    *
    * @param {AggregateRepository} repository
-   * @param {redis.client} promisified redis client
+   * @param {DynamoDB} dynamoDB
    */
-  constructor (repository, redis) {
+  constructor (repository, dynamoDB) {
     this.repository = repository
-    this.redis = redis
+    this.dynamoDB = dynamoDB
   }
 
   /**
@@ -25,7 +25,7 @@ export class AggregateRelation {
   findByRelatedId (relation, relatedId) {
     StringType(relation, ['AggregateRelation.findByRelatedId()', 'relation:String'])
     AggregateIdType(relatedId, ['AggregateRelation.findByRelatedId()', 'relatedId:AggregateId'])
-    return this.redis.smembersAsync(this.repository.alias + ':' + relation + ':' + relatedId)
+    return this.dynamoDB.smembersAsync(this.repository.alias + ':' + relation + ':' + relatedId)
       .map(id => this.repository.findById(id))
       .filter((model) => {
         return model !== undefined
@@ -47,7 +47,7 @@ export class AggregateRelation {
     StringType(relation, ['AggregateRelation.addRelatedId()', 'relation:String'])
     AggregateIdType(relatedId, ['AggregateRelation.addRelatedId()', 'relatedId:AggregateId'])
     AggregateIdType(aggregateId, ['AggregateRelation.addRelatedId()', 'aggregateId:AggregateId'])
-    return this.redis.saddAsync(this.repository.alias + ':' + relation + ':' + relatedId, aggregateId)
+    return this.dynamoDB.saddAsync(this.repository.alias + ':' + relation + ':' + relatedId, aggregateId)
   }
 
   /**
@@ -62,6 +62,8 @@ export class AggregateRelation {
     StringType(relation, ['AggregateRelation.removeRelatedId()', 'relation:String'])
     AggregateIdType(relatedId, ['AggregateRelation.removeRelatedId()', 'relatedId:AggregateId'])
     AggregateIdType(aggregateId, ['AggregateRelation.removeRelatedId()', 'aggregateId:AggregateId'])
-    return this.redis.sremAsync(this.repository.alias + ':' + relation + ':' + relatedId, aggregateId)
+    return this.dynamoDB.sremAsync(this.repository.alias + ':' + relation + ':' + relatedId, aggregateId)
   }
 }
+
+module.exports = {AggregateRelation}
