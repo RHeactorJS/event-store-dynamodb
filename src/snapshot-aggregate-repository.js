@@ -1,5 +1,6 @@
 const {AggregateRepositoryType} = require('./aggregate-repository')
 const t = require('tcomb')
+const {NonEmptyString} = require('./types')
 
 class SnapshotAggregateRepository {
   constructor (repo) {
@@ -12,10 +13,10 @@ class SnapshotAggregateRepository {
    * @return {Function}
    */
   getById (id) {
-    t.String(id)
+    NonEmptyString(id, ['SnapshotAggregateRepository.getById()', 'id:String'])
     return {
       until: until => {
-        t.Date(until)
+        t.Date(until, ['SnapshotAggregateRepository.getById().until()', 'until:Date'])
         return this.repo.eventStore.fetch(id)
           .filter(event => event.createdAt <= until)
           .reduce((aggregate, event) => this.repo.applyEvent(event, aggregate === false ? undefined : aggregate), false)

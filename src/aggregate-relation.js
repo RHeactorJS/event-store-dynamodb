@@ -1,4 +1,5 @@
 const t = require('tcomb')
+const {NonEmptyString} = require('./types')
 
 class AggregateRelation {
   /**
@@ -9,7 +10,7 @@ class AggregateRelation {
    */
   constructor (dynamoDB, tableName = 'relations') {
     this.dynamoDB = t.Object(dynamoDB, ['AggregateRelation()', 'dynamoDB:Object'])
-    this.tableName = t.String(tableName, ['AggregateRelation()', 'tableName:String'])
+    this.tableName = NonEmptyString(tableName, ['AggregateRelation()', 'tableName:String'])
   }
 
   /**
@@ -22,13 +23,11 @@ class AggregateRelation {
    * @returns {Promise.<Array.<AggregateRoot>>}
    */
   findByRelatedId (relation, relatedId) {
-    t.String(relation, ['AggregateRelation.findByRelatedId()', 'relation:String'])
-    t.String(relatedId, ['AggregateRelation.findByRelatedId()', 'relatedId:RelatedId'])
+    NonEmptyString(relation, ['AggregateRelation.findByRelatedId()', 'relation:String'])
+    NonEmptyString(relatedId, ['AggregateRelation.findByRelatedId()', 'relatedId:RelatedId'])
     return this.dynamoDB
       .getItem({
         TableName: this.tableName,
-        // KeyConditionExpression: 'AggregateRelation = :AggregateRelation AND RelatedId = :RelatedId',
-        // ExpressionAttributeValues: {':AggregateRelation': {'S': relation}, ':RelatedId': {'S': relatedId}}
         Key: {
           AggregateRelation: {
             S: relation
@@ -54,9 +53,9 @@ class AggregateRelation {
    * @returns {Promise}
    */
   addRelatedId (relation, relatedId, aggregateId) {
-    t.String(relation, ['AggregateRelation.addRelatedId()', 'relation:String'])
-    t.String(relatedId, ['AggregateRelation.addRelatedId()', 'relatedId:String'])
-    t.String(aggregateId, ['AggregateRelation.addRelatedId()', 'aggregateId:String'])
+    NonEmptyString(relation, ['AggregateRelation.addRelatedId()', 'relation:String'])
+    NonEmptyString(relatedId, ['AggregateRelation.addRelatedId()', 'relatedId:String'])
+    NonEmptyString(aggregateId, ['AggregateRelation.addRelatedId()', 'aggregateId:String'])
     return this.dynamoDB
       .updateItem({
         TableName: this.tableName,
@@ -88,9 +87,9 @@ class AggregateRelation {
    * @returns {Promise}
    */
   removeRelatedId (relation, relatedId, aggregateId) {
-    t.String(relation, ['AggregateRelation.removeRelatedId()', 'relation:String'])
-    t.String(relatedId, ['AggregateRelation.removeRelatedId()', 'relatedId:RelatedId'])
-    t.String(aggregateId, ['AggregateRelation.removeRelatedId()', 'aggregateId:RelatedId'])
+    NonEmptyString(relation, ['AggregateRelation.removeRelatedId()', 'relation:String'])
+    NonEmptyString(relatedId, ['AggregateRelation.removeRelatedId()', 'relatedId:RelatedId'])
+    NonEmptyString(aggregateId, ['AggregateRelation.removeRelatedId()', 'aggregateId:RelatedId'])
     return this.dynamoDB
       .updateItem({
         TableName: this.tableName,

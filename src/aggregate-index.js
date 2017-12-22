@@ -1,4 +1,5 @@
 const {EntryAlreadyExistsError, EntryNotFoundError} = require('@rheactorjs/errors')
+const {NonEmptyString} = require('./types')
 const t = require('tcomb')
 
 class AggregateIndex {
@@ -10,9 +11,9 @@ class AggregateIndex {
    * @param {String} tableName
    */
   constructor (aggregateName, dynamoDB, tableName = 'indexes') {
-    this.aggregateName = t.String(aggregateName, ['AggregateIndex()', ['aggregateName:string']])
+    this.aggregateName = NonEmptyString(aggregateName, ['AggregateIndex()', 'aggregateName:string'])
     this.dynamoDB = t.Object(dynamoDB, ['AggregateIndex()', 'dynamoDB:Object'])
-    this.tableName = t.String(tableName, ['AggregateIndex()', 'tableName:String'])
+    this.tableName = NonEmptyString(tableName, ['AggregateIndex()', 'tableName:String'])
   }
 
   /**
@@ -24,9 +25,9 @@ class AggregateIndex {
    * @returns {Promise}
    */
   add (indexName, key, aggregateId) {
-    t.String(indexName, ['AggregateIndex', 'add()', 'indexName:String'])
-    t.String(key, ['AggregateIndex', 'add()', 'value:String'])
-    t.String(aggregateId, ['AggregateIndex', 'add()', 'aggregateId:String'])
+    NonEmptyString(indexName, ['AggregateIndex.add()', 'indexName:String'])
+    NonEmptyString(key, ['AggregateIndex.add()', 'value:String'])
+    NonEmptyString(aggregateId, ['AggregateIndex.add()', 'aggregateId:String'])
     return this.dynamoDB
       .updateItem({
         TableName: this.tableName,
@@ -61,9 +62,9 @@ class AggregateIndex {
    * @throws EntryAlreadyExistsError If entry exists
    */
   addIfNotPresent (indexName, key, aggregateId) {
-    t.String(indexName, ['AggregateIndex', 'addIfNotPresent()', 'indexName:String'])
-    t.String(key, ['AggregateIndex', 'addIfNotPresent()', 'value:String'])
-    t.String(aggregateId, ['AggregateIndex', 'addIfNotPresent()', 'aggregateId:String'])
+    NonEmptyString(indexName, ['AggregateIndex.addIfNotPresent()', 'indexName:String'])
+    NonEmptyString(key, ['AggregateIndex.addIfNotPresent()', 'value:String'])
+    NonEmptyString(aggregateId, ['AggregateIndex.addIfNotPresent()', 'aggregateId:String'])
     return this.addToListIfNotPresent(`${indexName}.${key}`, aggregateId)
   }
 
@@ -76,9 +77,9 @@ class AggregateIndex {
    * @returns {Promise}
    */
   remove (indexName, key, aggregateId) {
-    t.String(indexName, ['AggregateIndex', 'remove()', 'indexName:String'])
-    t.String(key, ['AggregateIndex', 'remove()', 'value:String'])
-    t.String(aggregateId, ['AggregateIndex', 'remove()', 'aggregateId:String'])
+    NonEmptyString(indexName, ['AggregateIndex.remove()', 'indexName:String'])
+    NonEmptyString(key, ['AggregateIndex.remove()', 'value:String'])
+    NonEmptyString(aggregateId, ['AggregateIndex.remove()', 'aggregateId:String'])
     return this.dynamoDB
       .deleteItem({
         TableName: this.tableName,
@@ -104,8 +105,8 @@ class AggregateIndex {
    * @throws EntryAlreadyExistsError If entry exists
    */
   addToListIfNotPresent (indexName, aggregateId) {
-    t.String(indexName, ['AggregateIndex', 'addToListIfNotPresent()', 'indexName:String'])
-    t.String(aggregateId, ['AggregateIndex', 'addToListIfNotPresent()', 'aggregateId:String'])
+    NonEmptyString(indexName, ['AggregateIndex.addToListIfNotPresent()', 'indexName:String'])
+    NonEmptyString(aggregateId, ['AggregateIndex.addToListIfNotPresent()', 'aggregateId:String'])
     return this.dynamoDB
       .updateItem({
         TableName: this.tableName,
@@ -142,7 +143,7 @@ class AggregateIndex {
    * @returns {Promise.<Array>}
    */
   getList (indexName) {
-    t.String(indexName, ['AggregateIndex', 'getList()', 'indexName:String'])
+    NonEmptyString(indexName, ['AggregateIndex.getList()', 'indexName:String'])
     return this.dynamoDB
       .getItem({
         TableName: this.tableName,
@@ -168,8 +169,8 @@ class AggregateIndex {
    * @throws EntryAlreadyExistsError If entry exists
    */
   removeFromList (indexName, aggregateId) {
-    t.String(indexName, ['AggregateIndex', 'removeFromList()', 'indexName:String'])
-    t.String(aggregateId, ['AggregateIndex', 'removeFromList()', 'aggregateId:String'])
+    NonEmptyString(indexName, ['AggregateIndex.removeFromList()', 'indexName:String'])
+    NonEmptyString(aggregateId, ['AggregateIndex.removeFromList()', 'aggregateId:String'])
     return this.dynamoDB
       .updateItem({
         TableName: this.tableName,
@@ -215,8 +216,8 @@ class AggregateIndex {
    * @throws EntryNotFoundError
    */
   get (indexName, key) {
-    t.String(indexName, ['AggregateIndex', 'get()', 'indexName:String'])
-    t.String(key, ['AggregateIndex', 'get()', 'key:String'])
+    NonEmptyString(indexName, ['AggregateIndex.get()', 'indexName:String'])
+    NonEmptyString(key, ['AggregateIndex.get()', 'key:String'])
     return this.dynamoDB
       .getItem({
         TableName: this.tableName,
@@ -240,10 +241,12 @@ class AggregateIndex {
    * Return all aggregateIds in the given index type
    *
    * @param {String} indexName
+   * @param {String[]} items
+   * @param {Object} ExclusiveStartKey
    * @returns {Promise}
    */
   getAll (indexName, items = [], ExclusiveStartKey) {
-    t.String(indexName, ['AggregateIndex', 'getAll()', 'indexName:String'])
+    NonEmptyString(indexName, ['AggregateIndex.getAll()', 'indexName:String'])
     return this.dynamoDB
       .query({
         TableName: this.tableName,
@@ -254,7 +257,7 @@ class AggregateIndex {
       .promise()
       .then(({Items, LastEvaluatedKey}) => {
         items = items.concat(Items.map(({AggregateIds: {S}}) => S))
-        if (LastEvaluatedKey) return this.get(indexName, items, LastEvaluatedKey)
+        if (LastEvaluatedKey) return this.getAll(indexName, items, LastEvaluatedKey)
         return items
       })
   }

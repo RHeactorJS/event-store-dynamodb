@@ -1,5 +1,5 @@
 const t = require('tcomb')
-const {PositiveInteger} = require('./types')
+const {PositiveInteger, NonEmptyString} = require('./types')
 
 class ModelEvent {
   /**
@@ -13,9 +13,9 @@ class ModelEvent {
    * @param {Date} createdAt The time of the creation of the event
    */
   constructor (aggregateId, aggregateVersion, name, payload = {}, createdAt = new Date()) {
-    Object.defineProperty(this, 'aggregateId', {value: t.String(aggregateId, ['ModelEvent()', ['aggregateId:AggregateId']]), enumerable: true})
+    Object.defineProperty(this, 'aggregateId', {value: NonEmptyString(aggregateId, ['ModelEvent()', ['aggregateId:AggregateId']]), enumerable: true})
     Object.defineProperty(this, 'aggregateVersion', {value: PositiveInteger(aggregateVersion, ['ModelEvent()', ['aggregateVersion:AggregateVersion']]), enumerable: true})
-    Object.defineProperty(this, 'name', {value: t.String(name, ['ModelEvent()', ['name:string']]), enumerable: true})
+    Object.defineProperty(this, 'name', {value: NonEmptyString(name, ['ModelEvent()', ['name:string']]), enumerable: true})
     Object.defineProperty(this, 'payload', {value: t.Object(payload, ['ModelEvent()', ['payload:object']]), enumerable: true})
     Object.defineProperty(this, 'createdAt', {value: t.Date(createdAt, ['ModelEvent()', ['createdAt:Date']]), enumerable: true})
   }

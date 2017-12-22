@@ -1,5 +1,5 @@
 const t = require('tcomb')
-const {PositiveInteger} = require('./types')
+const {PositiveInteger, NonEmptyString} = require('./types')
 const MaybeDateType = t.maybe(t.Date)
 
 class AggregateMeta {
@@ -11,7 +11,7 @@ class AggregateMeta {
    * @param {Date|undefined} deletedAt
    */
   constructor (id, version, createdAt = new Date(), updatedAt, deletedAt) {
-    this._id = t.String(id, ['AggregateMeta', 'id:AggregateId'])
+    this._id = NonEmptyString(id, ['AggregateMeta', 'id:AggregateId'])
     this._version = PositiveInteger(version, ['AggregateMeta', 'version:AggregateVersion'])
     this._createdAt = createdAt
     this._updatedAt = MaybeDateType(updatedAt, ['AggregateMeta', 'updatedAt:?Date'])

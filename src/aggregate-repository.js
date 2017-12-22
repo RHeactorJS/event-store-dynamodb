@@ -3,7 +3,7 @@ const {ModelEvent, ModelEventType} = require('./model-event')
 const {EntryNotFoundError, EntryDeletedError} = require('@rheactorjs/errors')
 const t = require('tcomb')
 const {v4} = require('uuid')
-const {PositiveInteger} = require('./types')
+const {PositiveInteger, NonEmptyString} = require('./types')
 
 class AggregateRepository {
   /**
@@ -13,8 +13,8 @@ class AggregateRepository {
    * @param {EventStore} eventStore
    */
   constructor ({applyEvent}, eventStore) {
-    this.applyEvent = t.Function(applyEvent, ['AggregateRepository', 'root:AggregateRoot'])
-    this.eventStore = EventStoreType(eventStore, ['AggregateRepository', 'eventStore:EventStore'])
+    this.applyEvent = t.Function(applyEvent, ['AggregateRepository()', 'root:AggregateRoot'])
+    this.eventStore = EventStoreType(eventStore, ['AggregateRepository()', 'eventStore:EventStore'])
   }
 
   /**
@@ -27,7 +27,7 @@ class AggregateRepository {
    * @returns {Promise.<ModelEvent>}
    */
   add (payload) {
-    t.Object(payload, ['AggregateRepository', 'add()', 'payload:Object'])
+    t.Object(payload, ['AggregateRepository.add()', 'payload:Object'])
     return this.persistEvent(new ModelEvent(v4(), 1, this.eventStore.aggregateName + 'CreatedEvent', payload, new Date()))
   }
 
@@ -38,7 +38,7 @@ class AggregateRepository {
    * @return {Promise.<ModelEvent>}
    */
   persistEvent (modelEvent) {
-    ModelEventType(modelEvent, ['AggregateRepository', 'persistEvent()', 'modelEvent:ModelEvent'])
+    ModelEventType(modelEvent, ['AggregateRepository.persistEvent()', 'modelEvent:ModelEvent'])
     return this.eventStore.persist(modelEvent).then(() => modelEvent)
   }
 
@@ -50,8 +50,8 @@ class AggregateRepository {
    * @returns {Promise.<ModelEvent>}
    */
   remove (id, version) {
-    t.String(id, ['AggregateRepository', 'remove()', 'id:AggregateId'])
-    t.maybe(PositiveInteger)(version, ['AggregateRepository', 'remove()', 'version?:int>0'])
+    NonEmptyString(id, ['AggregateRepository.remove()', 'id:AggregateId'])
+    t.maybe(PositiveInteger)(version, ['AggregateRepository.remove()', 'version?:int>0'])
     if (!version) {
       return this.findById(id).then(aggregate => this.remove(id, aggregate.meta.version))
     }
@@ -65,7 +65,7 @@ class AggregateRepository {
    * @returns {Promise.<AggregateRoot>} or undefined if not found
    */
   findById (id) {
-    t.String(id, ['AggregateRepository', 'findById()', 'id:AggregateId'])
+    NonEmptyString(id, ['AggregateRepository.findById()', 'id:AggregateId'])
     return this.eventStore
       .fetch(id)
       .reduce((aggregate, event) => this.applyEvent(event, aggregate === false ? undefined : aggregate), false)
@@ -95,7 +95,7 @@ class AggregateRepository {
    * @throws {EntryNotFoundError} if entity is not found
    */
   getById (id) {
-    String(id, ['AggregateRepository', 'getById()', 'id:AggregateId'])
+    NonEmptyString(id, ['AggregateRepository.getById()', 'id:AggregateId'])
     return this.eventStore.fetch(id)
       .reduce((aggregate, event) => this.applyEvent(event, aggregate === false ? undefined : aggregate), false)
       .then(aggregate => {

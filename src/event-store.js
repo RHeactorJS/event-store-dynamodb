@@ -1,5 +1,6 @@
 const {ModelEvent, ModelEventType} = require('./model-event')
 const t = require('tcomb')
+const {NonEmptyString} = require('./types')
 
 class EventStore {
   /**
@@ -13,13 +14,13 @@ class EventStore {
    * @param {string} tableName
    */
   constructor (aggregateName, dynamoDB, tableName = 'events') {
-    this.aggregateName = t.String(aggregateName, ['EventStore()', ['aggregateName:string']])
+    this.aggregateName = NonEmptyString(aggregateName, ['EventStore()', ['aggregateName:string']])
     this.dynamoDB = t.Object(dynamoDB, ['EventStore()', ['dynamoDB:object']])
-    this.tableName = t.String(tableName, ['EventStore()', ['tableName:string']])
+    this.tableName = NonEmptyString(tableName, ['EventStore()', ['tableName:string']])
   }
 
   getId (aggregateId) {
-    t.String(aggregateId, ['EventStore', 'getId()', 'aggregateId:String'])
+    NonEmptyString(aggregateId, ['EventStore.getId()', 'aggregateId:String'])
     return `${this.aggregateName}.${aggregateId}`
   }
 
@@ -33,7 +34,7 @@ class EventStore {
    * @return {Promise}
    */
   persist (event) {
-    ModelEventType(event, ['EventStore', 'persist()', 'event:ModelEvent'])
+    ModelEventType(event, ['EventStore.persist()', 'event:ModelEvent'])
     return this.dynamoDB
       .putItem({
         Item: {
@@ -71,7 +72,7 @@ class EventStore {
    * @return {Promise.<Array.<ModelEvent>>}
    */
   fetch (aggregateId) {
-    t.String(aggregateId, ['EventStore', 'fetch()', 'aggregateId:String'])
+    NonEmptyString(aggregateId, ['EventStore.fetch()', 'aggregateId:String'])
     const fetchEvents = (events = [], ExclusiveStartKey) => this.dynamoDB
       .query({
         TableName: this.tableName,
