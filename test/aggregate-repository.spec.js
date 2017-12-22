@@ -71,10 +71,11 @@ describe('AggregateRepository', function () {
         .then((persistedMike) => {
           expect(persistedMike.meta.isDeleted).toEqual(false)
           return repository
-            .remove(persistedMike.meta.id)
+            .remove(persistedMike.meta.id, persistedMike.meta.version, {foo: 'bar'})
             .then((deletedEvent) => {
               expect(deletedEvent).toBeInstanceOf(ModelEvent)
               expect(deletedEvent.name).toEqual('DummyDeletedEvent')
+              expect(deletedEvent.payload).toEqual({foo: 'bar'})
               return repository.getById(deletedEvent.aggregateId)
                 .catch(EntryDeletedError, err => {
                   expect(err.entry.meta.isDeleted).toEqual(true)

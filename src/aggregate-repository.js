@@ -47,15 +47,16 @@ class AggregateRepository {
    *
    * @param {String} id
    * @param {Number} version
+   * @param {Object} payload
    * @returns {Promise.<ModelEvent>}
    */
-  remove (id, version) {
+  remove (id, version, payload = {}) {
     NonEmptyString(id, ['AggregateRepository.remove()', 'id:AggregateId'])
     t.maybe(PositiveInteger)(version, ['AggregateRepository.remove()', 'version?:int>0'])
     if (!version) {
       return this.findById(id).then(aggregate => this.remove(id, aggregate.meta.version))
     }
-    return this.persistEvent(new ModelEvent(id, version + 1, this.eventStore.aggregateName + 'DeletedEvent', {}, new Date()))
+    return this.persistEvent(new ModelEvent(id, version + 1, this.eventStore.aggregateName + 'DeletedEvent', payload, new Date()))
   }
 
   /**
