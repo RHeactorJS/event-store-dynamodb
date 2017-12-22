@@ -24,14 +24,11 @@ const up = () => Promise
     const eventsTable = `events-${Date.now()}`
     const relationsTable = `relations-${Date.now()}`
     const indexTable = `indexes-${Date.now()}`
-    const s = new EventStore('foo', d, eventsTable)
-    const r = new AggregateRelation(d, relationsTable)
-    const i = new AggregateIndex('foo', d, indexTable)
     return Promise
       .join(
-        s.createTable(),
-        r.createTable(),
-        i.createTable()
+        EventStore.createTable(d, eventsTable),
+        AggregateRelation.createTable(d, relationsTable),
+        AggregateIndex.createTable(d, indexTable)
       )
       .then(() => [d, eventsTable, relationsTable, indexTable])
   })

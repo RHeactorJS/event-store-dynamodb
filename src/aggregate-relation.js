@@ -5,10 +5,12 @@ class AggregateRelation {
   /**
    * Manages relations for aggregates
    *
+   * @param {string} aggregateName
    * @param {DynamoDB} dynamoDB
    * @param {string} tableName
    */
-  constructor (dynamoDB, tableName = 'relations') {
+  constructor (aggregateName, dynamoDB, tableName = 'relations') {
+    this.aggregateName = NonEmptyString(aggregateName, ['AggregateRelation()', ['aggregateName:string']])
     this.dynamoDB = t.Object(dynamoDB, ['AggregateRelation()', 'dynamoDB:Object'])
     this.tableName = NonEmptyString(tableName, ['AggregateRelation()', 'tableName:String'])
   }
@@ -30,7 +32,7 @@ class AggregateRelation {
         TableName: this.tableName,
         Key: {
           AggregateRelation: {
-            S: relation
+            S: `${this.aggregateName}.${relation}`
           },
           RelatedId: {
             S: relatedId
@@ -61,7 +63,7 @@ class AggregateRelation {
         TableName: this.tableName,
         Key: {
           AggregateRelation: {
-            S: relation
+            S: `${this.aggregateName}.${relation}`
           },
           RelatedId: {
             S: relatedId
@@ -95,7 +97,7 @@ class AggregateRelation {
         TableName: this.tableName,
         Key: {
           AggregateRelation: {
-            S: relation
+            S: `${this.aggregateName}.${relation}`
           },
           RelatedId: {
             S: relatedId
@@ -112,10 +114,10 @@ class AggregateRelation {
       .promise()
   }
 
-  createTable () {
-    return this.dynamoDB
+  static createTable (dynamoDB, TableName) {
+    return dynamoDB
       .createTable({
-        TableName: this.tableName,
+        TableName,
         KeySchema: [
           {
             AttributeName: 'AggregateRelation',

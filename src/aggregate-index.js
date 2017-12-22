@@ -262,10 +262,10 @@ class AggregateIndex {
       })
   }
 
-  createTable () {
-    return this.dynamoDB
+  static createTable (dynamoDB, TableName) {
+    return dynamoDB
       .createTable({
-        TableName: this.tableName,
+        TableName,
         KeySchema: [
           {
             AttributeName: 'AggregateIndexName',

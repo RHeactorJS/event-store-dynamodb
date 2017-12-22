@@ -16,7 +16,7 @@ describe('AggregateRelation', function () {
         DummyModel,
         new EventStore('Dummy', dynamoDB, eventsTable)
       )
-      relation = new AggregateRelation(dynamoDB, relationsTable)
+      relation = new AggregateRelation('Dummy', dynamoDB, relationsTable)
     }))
 
   afterAll(close)
