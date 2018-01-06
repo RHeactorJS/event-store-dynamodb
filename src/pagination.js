@@ -1,4 +1,4 @@
-const {ItemListType, MaybeObject, ZeroOrPositiveInteger} = require('./types')
+const {ItemListType, ZeroOrPositiveInteger} = require('./types')
 const {PaginatedResult} = require('./paginated-result')
 
 const t = require('tcomb')
@@ -33,13 +33,12 @@ class Pagination {
    *
    * @param {Array} items
    * @param {Number} total
-   * @param {object} query The query object used for the result
+   * @param {*} query The query used
    * @return PaginatedResult
    */
   result (items, total, query) {
     ItemListType(items)
     ZeroOrPositiveInteger(total)
-    MaybeObject(query)
     let prevOffset
     let nextOffset
     if (this.offset > 0) {

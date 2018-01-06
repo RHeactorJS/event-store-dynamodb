@@ -1,4 +1,4 @@
-const {ItemListType, MaybeObject, PositiveInteger, ZeroOrPositiveInteger, MaybeZeroOrPositiveInteger} = require('./types')
+const {ItemListType, PositiveInteger, ZeroOrPositiveInteger, MaybeZeroOrPositiveInteger} = require('./types')
 
 const t = require('tcomb')
 
@@ -10,7 +10,7 @@ class PaginatedResult {
    * @param {Number} total The total number of items
    * @param {Number} itemsPerPage The number of items per page
    * @param {Number} offset The offset of the current page
-   * @param {object} query The query object used for the result
+   * @param {*} query The query used
    * @param {Number|undefined} prevOffset If set represents the offset to use in order to fetch the previous page
    * @param {Number|undefined} nextOffset If set represents the offset to use in order to fetch the next page
    * @constructor
@@ -20,7 +20,6 @@ class PaginatedResult {
     ZeroOrPositiveInteger(total)
     PositiveInteger(itemsPerPage)
     ZeroOrPositiveInteger(offset)
-    MaybeObject(query)
     MaybeZeroOrPositiveInteger(prevOffset)
     MaybeZeroOrPositiveInteger(nextOffset)
     Object.defineProperty(this, 'items', {value: items, enumerable: true})
