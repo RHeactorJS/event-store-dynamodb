@@ -6,7 +6,9 @@ const {AggregateRoot, AggregateRootType, MaybeAggregateRootType} = require('./ag
 const {AggregateRepository, AggregateRepositoryType} = require('./aggregate-repository')
 const {EventStore, EventStoreType} = require('./event-store')
 const {ModelEvent, ModelEventType, ModelEventTypeList} = require('./model-event')
-const {PositiveInteger, NonEmptyString} = require('./types')
+const {PositiveInteger, NonEmptyString, ItemListType, MaybeObject, MaybeZeroOrPositiveInteger, ZeroOrPositiveInteger} = require('./types')
+const {Pagination, PaginationType} = require('./pagination')
+const {PaginatedResult, PaginatedResultType} = require('./paginated-result')
 
 module.exports = {
   AggregateIndex,
@@ -25,5 +27,13 @@ module.exports = {
   ModelEventType,
   ModelEventTypeList,
   PositiveInteger,
-  NonEmptyString
+  NonEmptyString,
+  ItemListType,
+  MaybeObject,
+  MaybeZeroOrPositiveInteger,
+  ZeroOrPositiveInteger,
+  Pagination,
+  PaginationType,
+  PaginatedResult,
+  PaginatedResultType
 }
