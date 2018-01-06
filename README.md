@@ -7,6 +7,8 @@
 [![semantic-release](https://img.shields.io/badge/semver-semantic%20release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![Test Coverage](https://codeclimate.com/github/RHeactorJS/event-store-dynamodb/badges/coverage.svg)](https://codeclimate.com/github/RHeactorJS/event-store-dynamodb/coverage)
 [![Code Climate](https://codeclimate.com/github/RHeactorJS/event-store-dynamodb/badges/gpa.svg)](https://codeclimate.com/github/RHeactorJS/event-store-dynamodb)
+[![Standard - JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 Implementation of an event store using DynamoDB.
 
