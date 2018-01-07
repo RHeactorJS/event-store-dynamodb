@@ -1,9 +1,8 @@
 const {EventStoreType} = require('./event-store')
-const {ModelEvent, ModelEventType} = require('./model-event')
+const {ModelEventType} = require('./model-event')
 const {EntryNotFoundError, EntryDeletedError} = require('@rheactorjs/errors')
 const t = require('tcomb')
-const {v4} = require('uuid')
-const {PositiveInteger, NonEmptyString} = require('./types')
+const {NonEmptyString} = require('./types')
 
 class AggregateRepository {
   /**
@@ -18,20 +17,6 @@ class AggregateRepository {
   }
 
   /**
-   * Generic method for add aggregates to the collection.
-   * The repository will assign an ID to them.
-   *
-   * Calls applyEvent with the created event on the aggregateName.
-   *
-   * @param {Object} payload
-   * @returns {Promise.<ModelEvent>}
-   */
-  add (payload) {
-    t.Object(payload, ['AggregateRepository.add()', 'payload:Object'])
-    return this.persistEvent(new ModelEvent(v4(), 1, this.eventStore.aggregateName + 'CreatedEvent', payload, new Date()))
-  }
-
-  /**
    * Generic method to persist model events
    *
    * @param {ModelEvent} modelEvent
@@ -43,30 +28,13 @@ class AggregateRepository {
   }
 
   /**
-   * Generic method for removing aggregates from the collection
-   *
-   * @param {String} id
-   * @param {Number} version
-   * @param {Object} payload
-   * @returns {Promise.<ModelEvent>}
-   */
-  remove (id, version, payload = {}) {
-    NonEmptyString(id, ['AggregateRepository.remove()', 'id:AggregateId'])
-    t.maybe(PositiveInteger)(version, ['AggregateRepository.remove()', 'version?:int>0'])
-    if (!version) {
-      return this.findById(id).then(aggregate => this.remove(id, aggregate.meta.version))
-    }
-    return this.persistEvent(new ModelEvent(id, version + 1, this.eventStore.aggregateName + 'DeletedEvent', payload, new Date()))
-  }
-
-  /**
    * Generic method for loading aggregates by id
    *
    * @param {String} id
    * @returns {Promise.<AggregateRoot>} or undefined if not found
    */
   findById (id) {
-    NonEmptyString(id, ['AggregateRepository.findById()', 'id:AggregateId'])
+    NonEmptyString(id, ['AggregateRepository.findById()', 'id:String'])
     return this.eventStore
       .fetch(id)
       .reduce((aggregate, event) => this.applyEvent(event, aggregate === false ? undefined : aggregate), false)
@@ -96,7 +64,7 @@ class AggregateRepository {
    * @throws {EntryNotFoundError} if entity is not found
    */
   getById (id) {
-    NonEmptyString(id, ['AggregateRepository.getById()', 'id:AggregateId'])
+    NonEmptyString(id, ['AggregateRepository.getById()', 'id:String'])
     return this.eventStore.fetch(id)
       .reduce((aggregate, event) => this.applyEvent(event, aggregate === false ? undefined : aggregate), false)
       .then(aggregate => {

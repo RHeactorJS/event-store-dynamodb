@@ -13,7 +13,7 @@ class ModelEvent {
    * @param {Date} createdAt The time of the creation of the event
    */
   constructor (aggregateId, aggregateVersion, name, payload = {}, createdAt = new Date()) {
-    Object.defineProperty(this, 'aggregateId', {value: NonEmptyString(aggregateId, ['ModelEvent()', ['aggregateId:AggregateId']]), enumerable: true})
+    Object.defineProperty(this, 'aggregateId', {value: NonEmptyString(aggregateId, ['ModelEvent()', ['aggregateId:String']]), enumerable: true})
     Object.defineProperty(this, 'aggregateVersion', {value: PositiveInteger(aggregateVersion, ['ModelEvent()', ['aggregateVersion:AggregateVersion']]), enumerable: true})
     Object.defineProperty(this, 'name', {value: NonEmptyString(name, ['ModelEvent()', ['name:string']]), enumerable: true})
     Object.defineProperty(this, 'payload', {value: t.Object(payload, ['ModelEvent()', ['payload:object']]), enumerable: true})

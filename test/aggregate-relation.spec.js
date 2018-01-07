@@ -6,6 +6,8 @@ const {AggregateRepository} = require('../')
 const {Promise} = require('bluebird')
 const {DummyModel} = require('./dummy-model')
 const {dynamoDB, close} = require('./helper')
+const {v4} = require('uuid')
+const {ModelEvent} = require('../')
 
 describe('AggregateRelation', function () {
   let repository, relation
@@ -22,7 +24,10 @@ describe('AggregateRelation', function () {
   afterAll(close)
 
   it('should add items', () => Promise
-    .join(repository.add({email: 'josh.doe@example.invalid'}), repository.add({email: 'jasper.doe@example.invalid'}))
+    .all([
+      new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'josh.doe@example.invalid'}),
+      new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jasper.doe@example.invalid'})
+    ].map(event => repository.persistEvent(event)))
     .spread((event1, event2) => {
       return Promise
         .join(
@@ -40,7 +45,10 @@ describe('AggregateRelation', function () {
   )
 
   it('should remove items', () => Promise
-    .join(repository.add({email: 'jill.doe@example.invalid'}), repository.add({email: 'jane.doe@example.invalid'}))
+    .all([
+      new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jill.doe@example.invalid'}),
+      new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jane.doe@example.invalid'})
+    ].map(event => repository.persistEvent(event)))
     .spread((event1, event2) => {
       return Promise
         .join(
