@@ -25,7 +25,7 @@ class Pagination {
    * @return {Array}
    */
   splice (list) {
-    return list.splice(this.offset, this.itemsPerPage)
+    return list.slice(this.offset, this.offset + this.itemsPerPage)
   }
 
   /**
