@@ -2,22 +2,17 @@
 
 const {AggregateRelation} = require('../')
 const {EventStore} = require('../')
-const {AggregateRepository} = require('../')
 const {Promise} = require('bluebird')
-const {DummyModel} = require('./dummy-model')
 const {dynamoDB, close} = require('./helper')
 const {v4} = require('uuid')
 const {ModelEvent} = require('../')
 
 describe('AggregateRelation', function () {
-  let repository, relation
+  let relation, es
 
   beforeAll(() => dynamoDB()
     .spread((dynamoDB, eventsTable, relationsTable) => {
-      repository = new AggregateRepository(
-        DummyModel,
-        new EventStore('Dummy', dynamoDB, eventsTable)
-      )
+      es = new EventStore('Dummy', dynamoDB, eventsTable)
       relation = new AggregateRelation('Dummy', dynamoDB, relationsTable)
     }))
 
@@ -27,7 +22,7 @@ describe('AggregateRelation', function () {
     .all([
       new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'josh.doe@example.invalid'}),
       new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jasper.doe@example.invalid'})
-    ].map(event => repository.persistEvent(event)))
+    ].map(event => es.persist(event)))
     .spread((event1, event2) => {
       return Promise
         .join(
@@ -48,7 +43,7 @@ describe('AggregateRelation', function () {
     .all([
       new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jill.doe@example.invalid'}),
       new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jane.doe@example.invalid'})
-    ].map(event => repository.persistEvent(event)))
+    ].map(event => es.persist(event)))
     .spread((event1, event2) => {
       return Promise
         .join(

@@ -1,5 +1,4 @@
 const {EventStoreType} = require('./event-store')
-const {ModelEventType} = require('./model-event')
 const {EntryNotFoundError, EntryDeletedError} = require('@rheactorjs/errors')
 const t = require('tcomb')
 const {NonEmptyString} = require('./types')
@@ -14,17 +13,6 @@ class AggregateRepository {
   constructor ({applyEvent}, eventStore) {
     this.applyEvent = t.Function(applyEvent, ['AggregateRepository()', 'root:AggregateRoot'])
     this.eventStore = EventStoreType(eventStore, ['AggregateRepository()', 'eventStore:EventStore'])
-  }
-
-  /**
-   * Generic method to persist model events
-   *
-   * @param {ModelEvent} modelEvent
-   * @return {Promise.<ModelEvent>}
-   */
-  persistEvent (modelEvent) {
-    ModelEventType(modelEvent, ['AggregateRepository.persistEvent()', 'modelEvent:ModelEvent'])
-    return this.eventStore.persist(modelEvent).then(() => modelEvent)
   }
 
   /**

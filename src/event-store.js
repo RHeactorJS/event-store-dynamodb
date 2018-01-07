@@ -31,7 +31,7 @@ class EventStore {
    * id per aggregateName. This can simply be done in the fetch method.
    *
    * @param {ModelEvent} event
-   * @return {Promise}
+   * @return {Promise.<ModelEvent>}
    */
   persist (event) {
     ModelEventType(event, ['EventStore.persist()', 'event:ModelEvent'])
@@ -63,6 +63,7 @@ class EventStore {
         TableName: this.tableName
       })
       .promise()
+      .then(() => event)
   }
 
   /**

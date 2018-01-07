@@ -34,12 +34,15 @@ class DummyModel extends AggregateRoot {
 
 describe('AggregateRepository', function () {
   let repository
+  let es
 
   beforeAll(() => dynamoDB()
     .spread((dynamoDB, eventsTable) => {
+      es = new EventStore('Dummy', dynamoDB, eventsTable)
       repository = new AggregateRepository(
         DummyModel,
-        new EventStore('Dummy', dynamoDB, eventsTable))
+        es
+      )
     }))
 
   afterAll(close)
@@ -51,11 +54,11 @@ describe('AggregateRepository', function () {
         expect(user).toEqual(undefined)
       })
     )
-    it('should return undefined if entity is deleted', () => repository
-      .persistEvent(new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jim.doe@example.invalid'}))
+    it('should return undefined if entity is deleted', () => es
+      .persist(new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jim.doe@example.invalid'}))
       .then(({aggregateId}) => repository.getById(aggregateId))
-      .then((persistedJim) => repository
-        .persistEvent(new ModelEvent(persistedJim.meta.id, 2, 'DummyDeletedEvent'))
+      .then((persistedJim) => es
+        .persist(new ModelEvent(persistedJim.meta.id, 2, 'DummyDeletedEvent'))
         .then(() => repository.findById(persistedJim.meta.id)
           .then((user) => {
             expect(user).toEqual(undefined)
@@ -72,11 +75,11 @@ describe('AggregateRepository', function () {
         expect(err.message).toContain('Dummy with id "9999999" not found.')
       })
     )
-    it('should throw an EntryDeletedError if entity is deleted', () => repository
-      .persistEvent(new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jack.doe@example.invalid'}))
+    it('should throw an EntryDeletedError if entity is deleted', () => es
+      .persist(new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jack.doe@example.invalid'}))
       .then(({aggregateId}) => repository.getById(aggregateId))
-      .then((persistedJack) => repository
-        .persistEvent(new ModelEvent(persistedJack.meta.id, 2, 'DummyDeletedEvent'))
+      .then((persistedJack) => es
+        .persist(new ModelEvent(persistedJack.meta.id, 2, 'DummyDeletedEvent'))
         .then(() => {
           Promise
             .try(repository.getById.bind(repository, persistedJack.meta.id))
@@ -95,7 +98,7 @@ describe('AggregateRepository', function () {
       .all([
         new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'john.doe@example.invalid'}),
         new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jane.doe@example.invalid'})
-      ].map(event => repository.persistEvent(event)))
+      ].map(event => es.persist(event)))
       .then(() => repository.findAll())
       .then((entities) => {
         expect(entities.length).toEqual(2)
