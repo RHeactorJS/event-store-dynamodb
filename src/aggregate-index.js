@@ -32,7 +32,7 @@ class AggregateIndex {
       .updateItem({
         TableName: this.tableName,
         Key: {
-          AggregateIndexName: {
+          IndexName: {
             S: `${this.aggregateName}.${indexName}`
           },
           IndexKey: {
@@ -84,7 +84,7 @@ class AggregateIndex {
       .deleteItem({
         TableName: this.tableName,
         Key: {
-          AggregateIndexName: {
+          IndexName: {
             S: `${this.aggregateName}.${indexName}`
           },
           IndexKey: {
@@ -111,7 +111,7 @@ class AggregateIndex {
       .updateItem({
         TableName: this.tableName,
         Key: {
-          AggregateIndexName: {
+          IndexName: {
             S: this.aggregateName
           },
           IndexKey: {
@@ -148,7 +148,7 @@ class AggregateIndex {
       .getItem({
         TableName: this.tableName,
         Key: {
-          AggregateIndexName: {
+          IndexName: {
             S: this.aggregateName
           },
           IndexKey: {
@@ -175,7 +175,7 @@ class AggregateIndex {
       .updateItem({
         TableName: this.tableName,
         Key: {
-          AggregateIndexName: {
+          IndexName: {
             S: this.aggregateName
           },
           IndexKey: {
@@ -222,7 +222,7 @@ class AggregateIndex {
       .getItem({
         TableName: this.tableName,
         Key: {
-          AggregateIndexName: {
+          IndexName: {
             S: `${this.aggregateName}.${indexName}`
           },
           IndexKey: {
@@ -251,8 +251,8 @@ class AggregateIndex {
       .query({
         TableName: this.tableName,
         ExclusiveStartKey,
-        KeyConditionExpression: 'AggregateIndexName = :AggregateIndexName',
-        ExpressionAttributeValues: {':AggregateIndexName': {S: `${this.aggregateName}.${indexName}`}}
+        KeyConditionExpression: 'IndexName = :IndexName',
+        ExpressionAttributeValues: {':IndexName': {S: `${this.aggregateName}.${indexName}`}}
       })
       .promise()
       .then(({Items, LastEvaluatedKey}) => {
@@ -268,7 +268,7 @@ class AggregateIndex {
         TableName,
         KeySchema: [
           {
-            AttributeName: 'AggregateIndexName',
+            AttributeName: 'IndexName',
             KeyType: 'HASH'
           },
           {
@@ -278,7 +278,7 @@ class AggregateIndex {
         ],
         AttributeDefinitions: [
           {
-            AttributeName: 'AggregateIndexName',
+            AttributeName: 'IndexName',
             AttributeType: 'S'
           },
           {

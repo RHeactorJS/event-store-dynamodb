@@ -11,9 +11,9 @@ describe('AggregateRelation', function () {
   let relation, es
 
   beforeAll(() => dynamoDB()
-    .spread((dynamoDB, eventsTable, relationsTable) => {
+    .spread((dynamoDB, eventsTable, indexTable) => {
       es = new EventStore('Dummy', dynamoDB, eventsTable)
-      relation = new AggregateRelation('Dummy', dynamoDB, relationsTable)
+      relation = new AggregateRelation('Dummy', dynamoDB, indexTable)
     }))
 
   afterAll(close)

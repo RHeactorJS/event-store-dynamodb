@@ -2,7 +2,6 @@
 
 const {DynamoDB} = require('aws-sdk')
 const {EventStore} = require('../')
-const {AggregateRelation} = require('../')
 const {AggregateIndex} = require('../')
 const dinossauro = require('dinossauro')
 const AWS = require('aws-sdk')
@@ -22,15 +21,13 @@ const up = () => Promise
     }
     const d = new DynamoDB(p)
     const eventsTable = `events-${Date.now()}`
-    const relationsTable = `relations-${Date.now()}`
     const indexTable = `indexes-${Date.now()}`
     return Promise
       .join(
         EventStore.createTable(d, eventsTable),
-        AggregateRelation.createTable(d, relationsTable),
         AggregateIndex.createTable(d, indexTable)
       )
-      .then(() => [d, eventsTable, relationsTable, indexTable])
+      .then(() => [d, eventsTable, indexTable])
   })
 
 const close = dinossauro.down

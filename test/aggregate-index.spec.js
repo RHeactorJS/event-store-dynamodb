@@ -9,7 +9,7 @@ const {EntryAlreadyExistsError} = require('@rheactorjs/errors')
 describe('AggregateIndex', () => {
   let aggregateIndex
 
-  beforeAll(() => dynamoDB().spread((dynamoDB, eventsTable, relationsTable, indexTable) => {
+  beforeAll(() => dynamoDB().spread((dynamoDB, eventsTable, indexTable) => {
     aggregateIndex = new AggregateIndex('user', dynamoDB, indexTable)
   }))
 

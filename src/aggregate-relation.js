@@ -31,10 +31,10 @@ class AggregateRelation {
       .getItem({
         TableName: this.tableName,
         Key: {
-          AggregateRelation: {
+          IndexName: {
             S: `${this.aggregateName}.${relation}`
           },
-          RelatedId: {
+          IndexKey: {
             S: relatedId
           }
         }
@@ -62,10 +62,10 @@ class AggregateRelation {
       .updateItem({
         TableName: this.tableName,
         Key: {
-          AggregateRelation: {
+          IndexName: {
             S: `${this.aggregateName}.${relation}`
           },
-          RelatedId: {
+          IndexKey: {
             S: relatedId
           }
         },
@@ -96,10 +96,10 @@ class AggregateRelation {
       .updateItem({
         TableName: this.tableName,
         Key: {
-          AggregateRelation: {
+          IndexName: {
             S: `${this.aggregateName}.${relation}`
           },
-          RelatedId: {
+          IndexKey: {
             S: relatedId
           }
         },
@@ -109,38 +109,6 @@ class AggregateRelation {
         },
         ExpressionAttributeValues: {
           ':AggregateId': {'SS': [aggregateId]}
-        }
-      })
-      .promise()
-  }
-
-  static createTable (dynamoDB, TableName) {
-    return dynamoDB
-      .createTable({
-        TableName,
-        KeySchema: [
-          {
-            AttributeName: 'AggregateRelation',
-            KeyType: 'HASH'
-          },
-          {
-            AttributeName: 'RelatedId',
-            KeyType: 'RANGE'
-          }
-        ],
-        AttributeDefinitions: [
-          {
-            AttributeName: 'AggregateRelation',
-            AttributeType: 'S'
-          },
-          {
-            AttributeName: 'RelatedId',
-            AttributeType: 'S'
-          }
-        ],
-        ProvisionedThroughput: {
-          ReadCapacityUnits: 1,
-          WriteCapacityUnits: 1
         }
       })
       .promise()
