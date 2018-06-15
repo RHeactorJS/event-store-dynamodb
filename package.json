@@ -42,7 +42,7 @@
     "dinossauro": "0.0.7",
     "husky": "^0.14.3",
     "jest": "^22.4.2",
-    "semantic-release": "^12.4.1",
+    "semantic-release": "^15.5.4",
     "standard": "^11.0.0"
   },
   "files": [
