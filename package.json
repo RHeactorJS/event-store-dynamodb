@@ -34,7 +34,7 @@
     "bluebird": "^3.5.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^6.1.2",
+    "@commitlint/cli": "^7.0.0",
     "@commitlint/config-angular": "^7.0.1",
     "aws-sdk": "^2.202.0",
     "bluebird": "^3.5.1",
