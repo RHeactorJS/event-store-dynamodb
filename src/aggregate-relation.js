@@ -1,5 +1,5 @@
 const t = require('tcomb')
-const {NonEmptyString} = require('./types')
+const { NonEmptyString } = require('./types')
 
 class AggregateRelation {
   /**
@@ -40,7 +40,7 @@ class AggregateRelation {
         }
       })
       .promise()
-      .then(({Item}) => Item && Item.AggregateIds ? Item.AggregateIds.SS : [])
+      .then(({ Item }) => Item && Item.AggregateIds ? Item.AggregateIds.SS : [])
   }
 
   /**
@@ -74,7 +74,7 @@ class AggregateRelation {
           '#AggregateIds': 'AggregateIds'
         },
         ExpressionAttributeValues: {
-          ':AggregateId': {'SS': [aggregateId]}
+          ':AggregateId': { 'SS': [aggregateId] }
         }
       })
       .promise()
@@ -108,11 +108,11 @@ class AggregateRelation {
           '#AggregateIds': 'AggregateIds'
         },
         ExpressionAttributeValues: {
-          ':AggregateId': {'SS': [aggregateId]}
+          ':AggregateId': { 'SS': [aggregateId] }
         }
       })
       .promise()
   }
 }
 
-module.exports = {AggregateRelation}
+module.exports = { AggregateRelation }

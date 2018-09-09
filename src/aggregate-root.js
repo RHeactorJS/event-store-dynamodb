@@ -1,7 +1,7 @@
 const t = require('tcomb')
-const {ModelEventType} = require('./model-event')
-const {UnhandledDomainEventError} = require('@rheactorjs/errors')
-const {AggregateMetaType} = require('./aggregate-meta')
+const { ModelEventType } = require('./model-event')
+const { UnhandledDomainEventError } = require('@rheactorjs/errors')
+const { AggregateMetaType } = require('./aggregate-meta')
 
 /**
  * Base class for aggregates
@@ -40,4 +40,4 @@ class AggregateRoot {
 const AggregateRootType = t.irreducible('AggregateRootType', x => x instanceof AggregateRoot)
 const MaybeAggregateRootType = t.maybe(AggregateRootType)
 
-module.exports = {AggregateRoot, AggregateRootType, MaybeAggregateRootType}
+module.exports = { AggregateRoot, AggregateRootType, MaybeAggregateRootType }

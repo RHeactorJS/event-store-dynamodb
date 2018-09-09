@@ -1,6 +1,6 @@
 /* global describe expect, it */
 
-const {Pagination} = require('../')
+const { Pagination } = require('../')
 
 describe('Pagination()', function () {
   it('should have default values', (done) => {

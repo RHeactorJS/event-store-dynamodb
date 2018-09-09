@@ -1,6 +1,6 @@
-const {AggregateRepositoryType} = require('./aggregate-repository')
+const { AggregateRepositoryType } = require('./aggregate-repository')
 const t = require('tcomb')
-const {NonEmptyString} = require('./types')
+const { NonEmptyString } = require('./types')
 
 class SnapshotAggregateRepository {
   constructor (repo) {
@@ -25,4 +25,4 @@ class SnapshotAggregateRepository {
   }
 }
 
-module.exports = {SnapshotAggregateRepository}
+module.exports = { SnapshotAggregateRepository }

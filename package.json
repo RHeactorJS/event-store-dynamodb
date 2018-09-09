@@ -27,23 +27,23 @@
   "homepage": "https://github.com/RHeactorJS/event-store-dynamodb#readme",
   "dependencies": {
     "@rheactorjs/errors": "^1.0.2",
-    "tcomb": "^3.2.24",
-    "uuid": "^3.2.1"
+    "tcomb": "^3.2.27",
+    "uuid": "^3.3.2"
   },
   "peerDependencies": {
     "bluebird": "^3.5.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^7.0.0",
-    "@commitlint/config-angular": "^7.0.1",
-    "aws-sdk": "^2.202.0",
-    "bluebird": "^3.5.1",
+    "@commitlint/cli": "^7.1.2",
+    "@commitlint/config-angular": "^7.1.2",
+    "aws-sdk": "^2.311.0",
+    "bluebird": "^3.5.2",
     "codeclimate-test-reporter": "^0.5.0",
     "dinossauro": "0.0.7",
     "husky": "^0.14.3",
-    "jest": "^22.4.2",
-    "semantic-release": "^15.5.4",
-    "standard": "^11.0.0"
+    "jest": "^23.5.0",
+    "semantic-release": "^15.9.14",
+    "standard": "^12.0.1"
   },
   "files": [
     "src",

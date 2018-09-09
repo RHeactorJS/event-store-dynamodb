@@ -1,5 +1,5 @@
 const t = require('tcomb')
-const {PositiveInteger, NonEmptyString} = require('./types')
+const { PositiveInteger, NonEmptyString } = require('./types')
 
 class ModelEvent {
   /**
@@ -13,15 +13,15 @@ class ModelEvent {
    * @param {Date} createdAt The time of the creation of the event
    */
   constructor (aggregateId, aggregateVersion, name, payload = {}, createdAt = new Date()) {
-    Object.defineProperty(this, 'aggregateId', {value: NonEmptyString(aggregateId, ['ModelEvent()', ['aggregateId:String']]), enumerable: true})
-    Object.defineProperty(this, 'aggregateVersion', {value: PositiveInteger(aggregateVersion, ['ModelEvent()', ['aggregateVersion:AggregateVersion']]), enumerable: true})
-    Object.defineProperty(this, 'name', {value: NonEmptyString(name, ['ModelEvent()', ['name:string']]), enumerable: true})
-    Object.defineProperty(this, 'payload', {value: t.Object(payload, ['ModelEvent()', ['payload:object']]), enumerable: true})
-    Object.defineProperty(this, 'createdAt', {value: t.Date(createdAt, ['ModelEvent()', ['createdAt:Date']]), enumerable: true})
+    Object.defineProperty(this, 'aggregateId', { value: NonEmptyString(aggregateId, ['ModelEvent()', ['aggregateId:String']]), enumerable: true })
+    Object.defineProperty(this, 'aggregateVersion', { value: PositiveInteger(aggregateVersion, ['ModelEvent()', ['aggregateVersion:AggregateVersion']]), enumerable: true })
+    Object.defineProperty(this, 'name', { value: NonEmptyString(name, ['ModelEvent()', ['name:string']]), enumerable: true })
+    Object.defineProperty(this, 'payload', { value: t.Object(payload, ['ModelEvent()', ['payload:object']]), enumerable: true })
+    Object.defineProperty(this, 'createdAt', { value: t.Date(createdAt, ['ModelEvent()', ['createdAt:Date']]), enumerable: true })
   }
 }
 
 const ModelEventType = t.irreducible('ModelEventType', x => x instanceof ModelEvent)
 const ModelEventTypeList = t.list(ModelEventType)
 
-module.exports = {ModelEvent, ModelEventType, ModelEventTypeList}
+module.exports = { ModelEvent, ModelEventType, ModelEventTypeList }

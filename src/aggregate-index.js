@@ -1,5 +1,5 @@
-const {EntryAlreadyExistsError, EntryNotFoundError} = require('@rheactorjs/errors')
-const {NonEmptyString} = require('./types')
+const { EntryAlreadyExistsError, EntryNotFoundError } = require('@rheactorjs/errors')
+const { NonEmptyString } = require('./types')
 const t = require('tcomb')
 
 class AggregateIndex {
@@ -44,7 +44,7 @@ class AggregateIndex {
           '#AggregateIds': 'AggregateIds'
         },
         ExpressionAttributeValues: {
-          ':AggregateId': {S: aggregateId}
+          ':AggregateId': { S: aggregateId }
         }
       })
       .promise()
@@ -124,8 +124,8 @@ class AggregateIndex {
           '#AggregateIds': 'AggregateIds'
         },
         ExpressionAttributeValues: {
-          ':AggregateId': {'SS': [aggregateId]},
-          ':AggregateIdString': {'S': aggregateId}
+          ':AggregateId': { 'SS': [aggregateId] },
+          ':AggregateIdString': { 'S': aggregateId }
         },
         ReturnValues: 'UPDATED_NEW'
       })
@@ -157,7 +157,7 @@ class AggregateIndex {
         }
       })
       .promise()
-      .then(({Item}) => Item && Item.AggregateIds ? Item.AggregateIds.SS : [])
+      .then(({ Item }) => Item && Item.AggregateIds ? Item.AggregateIds.SS : [])
   }
 
   /**
@@ -187,7 +187,7 @@ class AggregateIndex {
           '#AggregateIds': 'AggregateIds'
         },
         ExpressionAttributeValues: {
-          ':AggregateId': {'SS': [aggregateId]}
+          ':AggregateId': { 'SS': [aggregateId] }
         }
       })
       .promise()
@@ -231,7 +231,7 @@ class AggregateIndex {
         }
       })
       .promise()
-      .then(({Item}) => {
+      .then(({ Item }) => {
         if (Item && Item.AggregateIds) return Item.AggregateIds.S
         throw new EntryNotFoundError(`Item for "${indexName}.${key}" not found.`)
       })
@@ -252,11 +252,11 @@ class AggregateIndex {
         TableName: this.tableName,
         ExclusiveStartKey,
         KeyConditionExpression: 'IndexName = :IndexName',
-        ExpressionAttributeValues: {':IndexName': {S: `${this.aggregateName}.${indexName}`}}
+        ExpressionAttributeValues: { ':IndexName': { S: `${this.aggregateName}.${indexName}` } }
       })
       .promise()
-      .then(({Items, LastEvaluatedKey}) => {
-        items = items.concat(Items.map(({AggregateIds: {S}}) => S))
+      .then(({ Items, LastEvaluatedKey }) => {
+        items = items.concat(Items.map(({ AggregateIds: { S } }) => S))
         if (LastEvaluatedKey) return this.getAll(indexName, items, LastEvaluatedKey)
         return items
       })
@@ -295,4 +295,4 @@ class AggregateIndex {
   }
 }
 
-module.exports = {AggregateIndex}
+module.exports = { AggregateIndex }

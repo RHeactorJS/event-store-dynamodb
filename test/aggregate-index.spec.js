@@ -1,10 +1,10 @@
 /* global describe it beforeAll afterAll expect */
 
-const {AggregateIndex} = require('../')
-const {Promise} = require('bluebird')
-const {close, dynamoDB} = require('./helper')
+const { AggregateIndex } = require('../')
+const { Promise } = require('bluebird')
+const { close, dynamoDB } = require('./helper')
 
-const {EntryAlreadyExistsError} = require('@rheactorjs/errors')
+const { EntryAlreadyExistsError } = require('@rheactorjs/errors')
 
 describe('AggregateIndex', () => {
   let aggregateIndex

@@ -1,4 +1,4 @@
-const {ItemListType, PositiveInteger, ZeroOrPositiveInteger, MaybeZeroOrPositiveInteger} = require('./types')
+const { ItemListType, PositiveInteger, ZeroOrPositiveInteger, MaybeZeroOrPositiveInteger } = require('./types')
 
 const t = require('tcomb')
 
@@ -22,13 +22,13 @@ class PaginatedResult {
     ZeroOrPositiveInteger(offset)
     MaybeZeroOrPositiveInteger(prevOffset)
     MaybeZeroOrPositiveInteger(nextOffset)
-    Object.defineProperty(this, 'items', {value: items, enumerable: true})
-    Object.defineProperty(this, 'total', {value: total, enumerable: true})
-    Object.defineProperty(this, 'itemsPerPage', {value: itemsPerPage, enumerable: true})
-    Object.defineProperty(this, 'offset', {value: offset, enumerable: true})
-    Object.defineProperty(this, 'query', {value: query, enumerable: true})
-    Object.defineProperty(this, 'prevOffset', {value: prevOffset, enumerable: true})
-    Object.defineProperty(this, 'nextOffset', {value: nextOffset, enumerable: true})
+    Object.defineProperty(this, 'items', { value: items, enumerable: true })
+    Object.defineProperty(this, 'total', { value: total, enumerable: true })
+    Object.defineProperty(this, 'itemsPerPage', { value: itemsPerPage, enumerable: true })
+    Object.defineProperty(this, 'offset', { value: offset, enumerable: true })
+    Object.defineProperty(this, 'query', { value: query, enumerable: true })
+    Object.defineProperty(this, 'prevOffset', { value: prevOffset, enumerable: true })
+    Object.defineProperty(this, 'nextOffset', { value: nextOffset, enumerable: true })
   }
 }
 

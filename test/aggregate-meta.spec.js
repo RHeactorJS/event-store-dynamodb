@@ -1,6 +1,6 @@
 /* global describe it expect */
 
-const {AggregateMeta} = require('../')
+const { AggregateMeta } = require('../')
 
 describe('AggregateMeta', () => {
   describe('constructur', () => {

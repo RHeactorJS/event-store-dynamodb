@@ -1,6 +1,6 @@
-const {ModelEvent, ModelEventType} = require('./model-event')
+const { ModelEvent, ModelEventType } = require('./model-event')
 const t = require('tcomb')
-const {NonEmptyString} = require('./types')
+const { NonEmptyString } = require('./types')
 
 class EventStore {
   /**
@@ -79,10 +79,10 @@ class EventStore {
         TableName: this.tableName,
         ExclusiveStartKey,
         KeyConditionExpression: 'Id = :id AND Version > :version',
-        ExpressionAttributeValues: {':id': {'S': this.getId(aggregateId)}, ':version': {'N': '0'}}
+        ExpressionAttributeValues: { ':id': { 'S': this.getId(aggregateId) }, ':version': { 'N': '0' } }
       })
       .promise()
-      .then(({Items, LastEvaluatedKey}) => {
+      .then(({ Items, LastEvaluatedKey }) => {
         events = events.concat(Items)
         if (LastEvaluatedKey) return fetchEvents(events, LastEvaluatedKey)
         return events
@@ -103,11 +103,11 @@ class EventStore {
         IndexName: 'Aggregate-index',
         ExclusiveStartKey,
         KeyConditionExpression: 'AggregateName = :AggregateName',
-        ExpressionAttributeValues: {':AggregateName': {'S': this.aggregateName}}
+        ExpressionAttributeValues: { ':AggregateName': { 'S': this.aggregateName } }
       })
       .promise()
-      .then(({Items, LastEvaluatedKey}) => {
-        aggregates = aggregates.concat(Items.map(({AggregateId}) => AggregateId.S))
+      .then(({ Items, LastEvaluatedKey }) => {
+        aggregates = aggregates.concat(Items.map(({ AggregateId }) => AggregateId.S))
         if (LastEvaluatedKey) return fetchAggregates(aggregates, LastEvaluatedKey)
         return aggregates
       })
@@ -176,4 +176,4 @@ class EventStore {
 
 const EventStoreType = t.irreducible('EventStoreType', x => x instanceof EventStore)
 
-module.exports = {EventStore, EventStoreType}
+module.exports = { EventStore, EventStoreType }

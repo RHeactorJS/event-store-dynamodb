@@ -1,11 +1,11 @@
 /* global describe it beforeAll afterAll expect */
 
-const {AggregateRelation} = require('../')
-const {EventStore} = require('../')
-const {Promise} = require('bluebird')
-const {dynamoDB, close} = require('./helper')
-const {v4} = require('uuid')
-const {ModelEvent} = require('../')
+const { AggregateRelation } = require('../')
+const { EventStore } = require('../')
+const { Promise } = require('bluebird')
+const { dynamoDB, close } = require('./helper')
+const { v4 } = require('uuid')
+const { ModelEvent } = require('../')
 
 describe('AggregateRelation', function () {
   let relation, es
@@ -20,8 +20,8 @@ describe('AggregateRelation', function () {
 
   it('should add items', () => Promise
     .all([
-      new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'josh.doe@example.invalid'}),
-      new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jasper.doe@example.invalid'})
+      new ModelEvent(v4(), 1, 'DummyCreatedEvent', { email: 'josh.doe@example.invalid' }),
+      new ModelEvent(v4(), 1, 'DummyCreatedEvent', { email: 'jasper.doe@example.invalid' })
     ].map(event => es.persist(event)))
     .spread((event1, event2) => {
       return Promise
@@ -41,8 +41,8 @@ describe('AggregateRelation', function () {
 
   it('should remove items', () => Promise
     .all([
-      new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jill.doe@example.invalid'}),
-      new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jane.doe@example.invalid'})
+      new ModelEvent(v4(), 1, 'DummyCreatedEvent', { email: 'jill.doe@example.invalid' }),
+      new ModelEvent(v4(), 1, 'DummyCreatedEvent', { email: 'jane.doe@example.invalid' })
     ].map(event => es.persist(event)))
     .spread((event1, event2) => {
       return Promise

@@ -1,8 +1,8 @@
 /* global jest */
 
-const {DynamoDB} = require('aws-sdk')
-const {EventStore} = require('../')
-const {AggregateIndex} = require('../')
+const { DynamoDB } = require('aws-sdk')
+const { EventStore } = require('../')
+const { AggregateIndex } = require('../')
 const dinossauro = require('dinossauro')
 const AWS = require('aws-sdk')
 const Promise = require('bluebird')
@@ -32,4 +32,4 @@ const up = () => Promise
 
 const close = dinossauro.down
 
-module.exports = {dynamoDB: up, close}
+module.exports = { dynamoDB: up, close }

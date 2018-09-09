@@ -1,5 +1,5 @@
-const {ItemListType, ZeroOrPositiveInteger} = require('./types')
-const {PaginatedResult} = require('./paginated-result')
+const { ItemListType, ZeroOrPositiveInteger } = require('./types')
+const { PaginatedResult } = require('./paginated-result')
 
 const t = require('tcomb')
 const maxItemsPerPage = 100
@@ -13,8 +13,8 @@ class Pagination {
   constructor (offset, itemsPerPage) {
     offset = Math.max(0, ~~offset || 0)
     itemsPerPage = Math.min(Math.max(1, ~~itemsPerPage || 10), maxItemsPerPage)
-    Object.defineProperty(this, 'offset', {value: offset, enumerable: true})
-    Object.defineProperty(this, 'itemsPerPage', {value: itemsPerPage, enumerable: true})
+    Object.defineProperty(this, 'offset', { value: offset, enumerable: true })
+    Object.defineProperty(this, 'itemsPerPage', { value: itemsPerPage, enumerable: true })
   }
 
   /**

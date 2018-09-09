@@ -1,7 +1,7 @@
-const {EventStoreType} = require('./event-store')
-const {EntryNotFoundError, EntryDeletedError} = require('@rheactorjs/errors')
+const { EventStoreType } = require('./event-store')
+const { EntryNotFoundError, EntryDeletedError } = require('@rheactorjs/errors')
 const t = require('tcomb')
-const {NonEmptyString} = require('./types')
+const { NonEmptyString } = require('./types')
 
 class AggregateRepository {
   /**
@@ -10,7 +10,7 @@ class AggregateRepository {
    * @param {AggregateRoot} {applyEvent: {Function}}
    * @param {EventStore} eventStore
    */
-  constructor ({applyEvent}, eventStore) {
+  constructor ({ applyEvent }, eventStore) {
     this.applyEvent = t.Function(applyEvent, ['AggregateRepository()', 'root:AggregateRoot'])
     this.eventStore = EventStoreType(eventStore, ['AggregateRepository()', 'eventStore:EventStore'])
   }
@@ -69,4 +69,4 @@ class AggregateRepository {
 
 const AggregateRepositoryType = t.irreducible('AggregateRepositoryType', x => x instanceof AggregateRepository)
 
-module.exports = {AggregateRepository, AggregateRepositoryType}
+module.exports = { AggregateRepository, AggregateRepositoryType }

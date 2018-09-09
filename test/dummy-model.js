@@ -1,6 +1,6 @@
-const {AggregateRoot} = require('../')
-const {UnhandledDomainEventError} = require('@rheactorjs/errors')
-const {AggregateMeta} = require('../')
+const { AggregateRoot } = require('../')
+const { UnhandledDomainEventError } = require('@rheactorjs/errors')
+const { AggregateMeta } = require('../')
 
 class DummyModel extends AggregateRoot {
   /**
@@ -20,7 +20,7 @@ class DummyModel extends AggregateRoot {
    * @return {DummyModel}
    */
   static applyEvent (event, dummy) {
-    const {name, payload, createdAt, aggregateId} = event
+    const { name, payload, createdAt, aggregateId } = event
     switch (name) {
       case 'DummyCreatedEvent':
         return new DummyModel(payload.email, new AggregateMeta(aggregateId, 1, createdAt))
@@ -32,4 +32,4 @@ class DummyModel extends AggregateRoot {
   }
 }
 
-module.exports = {DummyModel}
+module.exports = { DummyModel }

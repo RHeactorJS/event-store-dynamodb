@@ -1,5 +1,5 @@
 const t = require('tcomb')
-const {PositiveInteger, NonEmptyString} = require('./types')
+const { PositiveInteger, NonEmptyString } = require('./types')
 const MaybeDateType = t.maybe(t.Date)
 
 class AggregateMeta {

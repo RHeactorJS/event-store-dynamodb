@@ -1,12 +1,12 @@
 /* global describe it beforeAll afterAll expect */
 
-const {AggregateRepository, AggregateRoot, AggregateMeta, AggregateMetaType, EventStore} = require('../')
-const {Promise} = require('bluebird')
+const { AggregateRepository, AggregateRoot, AggregateMeta, AggregateMetaType, EventStore } = require('../')
+const { Promise } = require('bluebird')
 
-const {ModelEvent} = require('../')
-const {EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError} = require('@rheactorjs/errors')
-const {dynamoDB, close} = require('./helper')
-const {v4} = require('uuid')
+const { ModelEvent } = require('../')
+const { EntryNotFoundError, EntryDeletedError, UnhandledDomainEventError } = require('@rheactorjs/errors')
+const { dynamoDB, close } = require('./helper')
+const { v4 } = require('uuid')
 
 class DummyModel extends AggregateRoot {
   constructor (email, meta) {
@@ -55,8 +55,8 @@ describe('AggregateRepository', function () {
       })
     )
     it('should return undefined if entity is deleted', () => es
-      .persist(new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jim.doe@example.invalid'}))
-      .then(({aggregateId}) => repository.getById(aggregateId))
+      .persist(new ModelEvent(v4(), 1, 'DummyCreatedEvent', { email: 'jim.doe@example.invalid' }))
+      .then(({ aggregateId }) => repository.getById(aggregateId))
       .then((persistedJim) => es
         .persist(new ModelEvent(persistedJim.meta.id, 2, 'DummyDeletedEvent'))
         .then(() => repository.findById(persistedJim.meta.id)
@@ -76,8 +76,8 @@ describe('AggregateRepository', function () {
       })
     )
     it('should throw an EntryDeletedError if entity is deleted', () => es
-      .persist(new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jack.doe@example.invalid'}))
-      .then(({aggregateId}) => repository.getById(aggregateId))
+      .persist(new ModelEvent(v4(), 1, 'DummyCreatedEvent', { email: 'jack.doe@example.invalid' }))
+      .then(({ aggregateId }) => repository.getById(aggregateId))
       .then((persistedJack) => es
         .persist(new ModelEvent(persistedJack.meta.id, 2, 'DummyDeletedEvent'))
         .then(() => {
@@ -96,13 +96,13 @@ describe('AggregateRepository', function () {
   describe('.findAll()', () => {
     it('should return all entities', () => Promise
       .all([
-        new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'john.doe@example.invalid'}),
-        new ModelEvent(v4(), 1, 'DummyCreatedEvent', {email: 'jane.doe@example.invalid'})
+        new ModelEvent(v4(), 1, 'DummyCreatedEvent', { email: 'john.doe@example.invalid' }),
+        new ModelEvent(v4(), 1, 'DummyCreatedEvent', { email: 'jane.doe@example.invalid' })
       ].map(event => es.persist(event)))
       .then(() => repository.findAll())
       .then((entities) => {
         expect(entities.length).toEqual(2)
-        const emails = entities.map(({email}) => email)
+        const emails = entities.map(({ email }) => email)
         expect(emails).toContain('john.doe@example.invalid')
         expect(emails).toContain('jane.doe@example.invalid')
       })

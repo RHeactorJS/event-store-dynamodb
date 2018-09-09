@@ -1,14 +1,14 @@
 /* global describe it beforeAll afterAll expect */
 
-const {EventStore} = require('../')
-const {ModelEvent} = require('../')
-const {AggregateRepository} = require('../')
-const {SnapshotAggregateRepository} = require('../')
-const {Promise} = require('bluebird')
+const { EventStore } = require('../')
+const { ModelEvent } = require('../')
+const { AggregateRepository } = require('../')
+const { SnapshotAggregateRepository } = require('../')
+const { Promise } = require('bluebird')
 
-const {AggregateRoot} = require('../')
-const {AggregateMeta} = require('../')
-const {dynamoDB, close} = require('./helper')
+const { AggregateRoot } = require('../')
+const { AggregateMeta } = require('../')
+const { dynamoDB, close } = require('./helper')
 
 class DummyModel extends AggregateRoot {
   /**
@@ -19,7 +19,7 @@ class DummyModel extends AggregateRoot {
    * @return {DummyModel}
    */
   static applyEvent (event, dummy) {
-    const {createdAt, aggregateId} = event
+    const { createdAt, aggregateId } = event
     if (!dummy) return new DummyModel(new AggregateMeta(aggregateId, 1, createdAt))
     return new DummyModel(dummy.meta.updated(createdAt))
   }
