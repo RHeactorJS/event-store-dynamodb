@@ -133,10 +133,7 @@ class AggregateRelation {
       .promise()
       .then(async ({ Items, LastEvaluatedKey }) => {
         await Promise.all(
-          Items.map(({ IndexName, IndexKey }) => this.dynamoDB.deleteItem({
-            TableName: this.tableName,
-            Key: { IndexName, IndexKey }
-          }).promise())
+          Items.map(({ IndexKey: { S: relatedId } }) => this.removeRelatedId(relation, relatedId, aggregateId))
         ).then()
         if (LastEvaluatedKey) return deleteRelations(LastEvaluatedKey)
       })

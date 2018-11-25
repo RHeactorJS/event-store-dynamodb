@@ -60,23 +60,26 @@ describe('AggregateRelation', function () {
   )
 
   test('removeRelation() should remove all items', async () => {
-    const aggregateId = v4()
+    const aggregateId1 = v4()
+    const aggregateId2 = v4()
     const user1 = v4()
     const user2 = v4()
 
     await Promise.all(
       [
-        relation.addRelatedId('acme', user1, aggregateId),
-        relation.addRelatedId('acme', user2, aggregateId)
+        relation.addRelatedId('acme', user1, aggregateId1),
+        relation.addRelatedId('acme', user2, aggregateId1),
+        relation.addRelatedId('acme', user1, aggregateId2),
+        relation.addRelatedId('acme', user2, aggregateId2)
       ]
     )
 
-    expect(await relation.findByRelatedId('acme', user1)).toHaveLength(1)
-    expect(await relation.findByRelatedId('acme', user2)).toHaveLength(1)
+    expect(await relation.findByRelatedId('acme', user1)).toHaveLength(2)
+    expect(await relation.findByRelatedId('acme', user2)).toHaveLength(2)
 
-    await relation.removeRelation('acme', aggregateId)
+    await relation.removeRelation('acme', aggregateId1)
 
-    expect(await relation.findByRelatedId('acme', user1)).toHaveLength(0)
-    expect(await relation.findByRelatedId('acme', user2)).toHaveLength(0)
+    expect(await relation.findByRelatedId('acme', user1)).toEqual([aggregateId2])
+    expect(await relation.findByRelatedId('acme', user2)).toEqual([aggregateId2])
   })
 })
