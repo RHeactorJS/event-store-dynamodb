@@ -81,7 +81,7 @@ class AggregateRelation {
   }
 
   /**
-   * A helper function for removing the the aggregateId with the given relatedId of the relation
+   * A helper function for removing the aggregateId with the given relatedId of the relation
    *
    * @param {String} relation
    * @param {String} relatedId
@@ -112,6 +112,35 @@ class AggregateRelation {
         }
       })
       .promise()
+  }
+
+  /**
+   * Remove all relations to the given aggregateId from the given relation
+   *
+   * @param {String} relation
+   * @param {String} aggregateId
+   */
+  removeRelation (relation, aggregateId) {
+    NonEmptyString(relation, ['AggregateRelation.removeRelatedId()', 'relation:String'])
+    NonEmptyString(aggregateId, ['AggregateRelation.removeRelatedId()', 'aggregateId:RelatedId'])
+    const deleteRelations = (ExclusiveStartKey) => this.dynamoDB
+      .query({
+        TableName: this.tableName,
+        ExclusiveStartKey,
+        KeyConditionExpression: 'IndexName = :IndexName AND IndexKey > :IndexKey',
+        ExpressionAttributeValues: { ':IndexName': { 'S': `${this.aggregateName}.${relation}` }, ':IndexKey': { 'S': '0' } }
+      })
+      .promise()
+      .then(async ({ Items, LastEvaluatedKey }) => {
+        await Promise.all(
+          Items.map(({ IndexName, IndexKey }) => this.dynamoDB.deleteItem({
+            TableName: this.tableName,
+            Key: { IndexName, IndexKey }
+          }).promise())
+        ).then()
+        if (LastEvaluatedKey) return deleteRelations(LastEvaluatedKey)
+      })
+    return deleteRelations()
   }
 }
 

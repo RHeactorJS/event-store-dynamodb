@@ -1,4 +1,4 @@
-/* global describe it beforeAll afterAll expect */
+/* global describe test it beforeAll afterAll expect */
 
 const { AggregateRelation } = require('../')
 const { EventStore } = require('../')
@@ -58,4 +58,25 @@ describe('AggregateRelation', function () {
         })
     })
   )
+
+  test('removeRelation() should remove all items', async () => {
+    const aggregateId = v4()
+    const user1 = v4()
+    const user2 = v4()
+
+    await Promise.all(
+      [
+        relation.addRelatedId('acme', user1, aggregateId),
+        relation.addRelatedId('acme', user2, aggregateId)
+      ]
+    )
+
+    expect(await relation.findByRelatedId('acme', user1)).toHaveLength(1)
+    expect(await relation.findByRelatedId('acme', user2)).toHaveLength(1)
+
+    await relation.removeRelation('acme', aggregateId)
+
+    expect(await relation.findByRelatedId('acme', user1)).toHaveLength(0)
+    expect(await relation.findByRelatedId('acme', user2)).toHaveLength(0)
+  })
 })
